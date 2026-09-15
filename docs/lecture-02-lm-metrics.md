@@ -95,14 +95,14 @@ training team.
 
 All PDFs are in [papers/](../papers/README.md).
 
-- Brown et al. 2020. *Language Models are Few-Shot Learners* (GPT-3). [PDF](../papers/brown-2020-gpt3.pdf) · [arXiv 2005.14165](https://arxiv.org/abs/2005.14165)
-- Kaplan et al. 2020. *Scaling Laws for Neural Language Models*. [PDF](../papers/kaplan-2020-scaling-laws.pdf) · [arXiv 2001.08361](https://arxiv.org/abs/2001.08361)
-- Gao et al. 2020. *The Pile: An 800GB Dataset of Diverse Text for Language Modeling*. [PDF](../papers/gao-2020-the-pile.pdf) · [arXiv 2101.00027](https://arxiv.org/abs/2101.00027)
-- Hoffmann et al. 2022. *Training Compute-Optimal Large Language Models* (Chinchilla). [PDF](../papers/hoffmann-2022-chinchilla.pdf) · [arXiv 2203.15556](https://arxiv.org/abs/2203.15556)
-- DeepSeek-AI 2024. *DeepSeek LLM: Scaling Open-Source Language Models with Longtermism*. [PDF](../papers/deepseek-2024-deepseek-llm.pdf) · [arXiv 2401.02954](https://arxiv.org/abs/2401.02954)
-- Llama Team 2024. *The Llama 3 Herd of Models*. [PDF](../papers/llama-team-2024-llama3.pdf) · [arXiv 2407.21783](https://arxiv.org/abs/2407.21783)
-- Li et al. 2024. *DataComp-LM: In Search of the Next Generation of Training Sets for Language Models*. [PDF](../papers/li-2024-dclm.pdf) · [arXiv 2406.11794](https://arxiv.org/abs/2406.11794)
-- DeepSeek-AI 2024. *DeepSeek-V3 Technical Report*. [PDF](../papers/deepseek-2024-deepseek-v3.pdf) · [arXiv 2412.19437](https://arxiv.org/abs/2412.19437)
-- OLMo Team 2025. *2 OLMo 2 Furious*. [PDF](../papers/olmo-2025-olmo2.pdf) · [arXiv 2501.00656](https://arxiv.org/abs/2501.00656)
-- Qwen Team 2025. *Qwen3 Technical Report*. [PDF](../papers/qwen-2025-qwen3.pdf) · [arXiv 2505.09388](https://arxiv.org/abs/2505.09388)
+- Brown et al. 2020. *Language Models are Few-Shot Learners* (GPT-3). [PDF](../papers/2020-neurips-brown-language-models-few-shot-learners-gpt3.pdf) · [arXiv 2005.14165](https://arxiv.org/abs/2005.14165)
+- Kaplan et al. 2020. *Scaling Laws for Neural Language Models*. [PDF](../papers/2020-arxiv-kaplan-scaling-laws-neural-language-models.pdf) · [arXiv 2001.08361](https://arxiv.org/abs/2001.08361)
+- Gao et al. 2020. *The Pile: An 800GB Dataset of Diverse Text for Language Modeling*. [PDF](../papers/2020-arxiv-gao-the-pile-800gb-dataset-diverse-text.pdf) · [arXiv 2101.00027](https://arxiv.org/abs/2101.00027)
+- Hoffmann et al. 2022. *Training Compute-Optimal Large Language Models* (Chinchilla). [PDF](../papers/2022-neurips-hoffmann-training-compute-optimal-large-language-models-chinchilla.pdf) · [arXiv 2203.15556](https://arxiv.org/abs/2203.15556)
+- DeepSeek-AI 2024. *DeepSeek LLM: Scaling Open-Source Language Models with Longtermism*. [PDF](../papers/2024-arxiv-deepseek-deepseek-llm-scaling-open-source-language-models.pdf) · [arXiv 2401.02954](https://arxiv.org/abs/2401.02954)
+- Llama Team 2024. *The Llama 3 Herd of Models*. [PDF](../papers/2024-arxiv-llama-team-llama-3-herd-of-models.pdf) · [arXiv 2407.21783](https://arxiv.org/abs/2407.21783)
+- Li et al. 2024. *DataComp-LM: In Search of the Next Generation of Training Sets for Language Models*. [PDF](../papers/2024-neurips-li-datacomp-lm-next-generation-training-sets.pdf) · [arXiv 2406.11794](https://arxiv.org/abs/2406.11794)
+- DeepSeek-AI 2024. *DeepSeek-V3 Technical Report*. [PDF](../papers/2024-arxiv-deepseek-deepseek-v3-technical-report.pdf) · [arXiv 2412.19437](https://arxiv.org/abs/2412.19437)
+- OLMo Team 2025. *2 OLMo 2 Furious*. [PDF](../papers/2025-arxiv-olmo-team-2-olmo-2-furious.pdf) · [arXiv 2501.00656](https://arxiv.org/abs/2501.00656)
+- Qwen Team 2025. *Qwen3 Technical Report*. [PDF](../papers/2025-arxiv-qwen-team-qwen3-technical-report.pdf) · [arXiv 2505.09388](https://arxiv.org/abs/2505.09388)
 - Not in the folder: Ankner et al. 2024, *Perplexed by Perplexity: Perplexity-Based Data Pruning With Small Reference Models*, [arXiv 2405.20541](https://arxiv.org/abs/2405.20541); Wenzek et al. 2020, *CCNet*, [arXiv 1911.00359](https://arxiv.org/abs/1911.00359).
