@@ -18,6 +18,8 @@ CASES = [
     ('GPT-4 rocks!!', ['GPT', '-', '4', ' rocks', '!!']),
     ('  two  spaces', [' ', ' two', ' ', ' spaces']),
     ('tab\tsep\nline', ['tab', '\t', 'sep', '\n', 'line']),
+    ('snake_case', ['snake', '_', 'case']),
+    ('a_b', ['a', '_', 'b']),
 ]
 PREDICTION_INPUTS = ["don't stop", 'x2 + 3x = 0', "It's 3.14"]  # listed in instruction.md; students predict these
 MIN_OWN_CASES = 2

@@ -21,11 +21,11 @@ Input: any string. Output: the chunks the GPT-2 pre-tokenizer would produce, in 
 1. a contraction suffix `'s`, `'t`, `'re`, `'ve`, `'m`, `'ll`, `'d`;
 2. an optional space followed by a run of letters (Python's `re` has no `\p{L}`; use `[^\W\d_]` for a Unicode letter);
 3. an optional space followed by a run of digits (`\d`);
-4. an optional space followed by a run of characters that are neither whitespace nor word characters (`[^\s\w]`);
+4. an optional space followed by a run of other non-space characters, i.e. characters that are neither a letter nor a digit (punctuation, symbols, and also `_`, which Python's `\w` would swallow; write this branch as `(?:(?![^\W\d_]|\d)\S)+`);
 5. a run of whitespace that is not followed by a non-space character (`\s+(?!\S)`);
 6. any remaining run of whitespace.
 
-An empty string gives an empty list.
+Every character of the input lands in exactly one chunk, so the chunks concatenate back to the input. An empty string gives an empty list.
 
 ## Examples
 
@@ -33,6 +33,7 @@ An empty string gives an empty list.
 | :--- | :--- |
 | `"Hello world"` | `["Hello", " world"]` |
 | `"I'm 25 years old."` | `["I", "'m", " 25", " years", " old", "."]` |
+| `"snake_case"` | `["snake", "_", "case"]` |
 | `""` | `[]` |
 
 ## Before you code: predict, then break it
@@ -69,7 +70,7 @@ uv run python scripts/tasks.py check tasks/l01-tokenization/gpt2-pretokenizer <u
 
 ## Rules
 
-- Standard library only (`re` is enough). Python's `re` does not support `\p{L}` or possessive quantifiers; the six rules above are already written in `re` syntax.
+- Standard library only (`re` is enough). Python's `re` does not support `\p{L}`, `\p{N}`, or possessive quantifiers; the six rules above are already written in `re` syntax. One known difference from tiktoken: Python's `\d` matches only decimal digits, and its `\w` counts numerals like `²` and `½` as word characters, so they join the letter run in rule 2 here, while GPT-2's `\p{N}` treats them as digits.
 - Use your own words and code; discussing the approach with classmates is fine.
 - PR title `l01-tokenization/gpt2-pretokenizer: <username>`, body `Related to #<issue>`.
 
