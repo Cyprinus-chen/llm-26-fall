@@ -449,9 +449,9 @@ Expected answer: 10, independent of $t$. Notebook E03 computes it numerically fo
 | Data | Unigram | Bigram | Trigram |
 | :--- | ---: | ---: | ---: |
 | WSJ, 38M words: word perplexity | 962 | 170 | 109 |
-| TinyStories: bits per byte | 2.07 | 1.30 | 1.13 |
-| OpenWebText: bits per byte | 2.48 | 2.07 | 2.04 |
-| Chinese web: bits per byte | 2.48 | 2.10 | 2.05 |
+| TinyStories: bits per byte | 2.07 | 1.30 | 1.12 |
+| OpenWebText: bits per byte | 2.48 | 2.06 | 2.03 |
+| Chinese web: bits per byte | 2.48 | 2.10 | 2.04 |
 
 - Lower perplexity does **not** guarantee better downstream results (speech recognition, MT), but it correlates well enough to serve as the **quick check**.
 
@@ -511,12 +511,12 @@ Higher order gives locally fluent phrases but still no global coherence. Samples
 
 ## N-grams in a 2026 pipeline: the perplexity filter
 
-<img class="diagram" src="assets/lm-filter.svg" alt="Histogram of bits per byte assigned by a Wikipedia 3-gram model to 1200 OpenWebText documents, with a dashed cut line at 2.67 bits per byte that drops the worst third, and a second histogram of TinyStories documents centred near 2.79.">
+<img class="diagram" src="assets/lm-filter.svg" alt="Histogram of bits per byte assigned by a Wikipedia 3-gram model to 1200 OpenWebText documents, with a dashed cut line at 2.63 bits per byte that drops the worst third, and a second histogram of TinyStories documents centred near 2.75.">
 
-<p class="caption">CCNet, RedPajama-V2 (<code>ccnet_perplexity</code>), and Dolma keep web text that a Wikipedia n-gram model finds predictable. Closest to Wikipedia here: a wire-service news paragraph (2.02 bits per byte); farthest: a page of garbled box-drawing characters (6.89).</p>
+<p class="caption">CCNet, RedPajama-V2 (<code>ccnet_perplexity</code>), and Dolma keep web text that a Wikipedia n-gram model finds predictable. Closest to Wikipedia here: a wire-service news paragraph (1.99 bits per byte); farthest: a page of garbled box-drawing characters (6.76).</p>
 
 Note:
-Period 3 begins here. This is stage 2b of the course data pipeline (docs/pretraining-plan.md, Section 4): a reference n-gram model trained on 15158 Wikipedia articles (25 MB of WikiText-103) scores every web document in bits per byte; CCNet keeps the head and middle thirds. Median web score 2.56, median TinyStories score 2.79: children's stories are far from Wikipedia, which is exactly what a reference model measures, so the threshold is a policy choice, not a quality oracle. Students run this on 100 documents in the Week 2 task and on the full mixture in Week 5 (pipeline/filters/lm_score.py). Figure: scripts/lecture02_experiments.py, Qwen3 tokenizer.
+Period 3 begins here. This is stage 2b of the course data pipeline (docs/pretraining-plan.md, Section 4): a reference n-gram model trained on 15158 Wikipedia articles (25 MB of WikiText-103) scores every web document in bits per byte; CCNet keeps the head and middle thirds. Median web score 2.52, median TinyStories score 2.75: children's stories are far from Wikipedia, which is exactly what a reference model measures, so the threshold is a policy choice, not a quality oracle. Students run this on 100 documents in the Week 2 task and on the full mixture in Week 5 (pipeline/filters/lm_score.py). Figure: scripts/lecture02_experiments.py, Qwen3 tokenizer.
 
 ---
 
@@ -614,7 +614,7 @@ NPLM already beat the best smoothed $N$-gram models in 2003; the gap widened wit
 <p class="caption">Round 0: bigram on TinyStories. Each round: sample 2,000 stories, retrain on them only. Every self-improving pipeline needs a judge and a filter; Weeks 8 and 11–16 add them. Notebook practice P04.</p>
 
 Note:
-Held-out bits per byte 1.299 → 1.941 over 5 rounds; distinct token types in the corpus 12,211 → 3,552. A round-5 sample: “Once upon was isFred They coin!" upon storm were a scarf dressed in my named Mom out a time look, someday like arc with ”. This is model collapse in its simplest form (Shumailov et al., 2024): the tails of the distribution are lost first. The fix is the previous section's tool, a reference model or judge that filters synthetic data before it is trained on; Cosmopedia (Week 8) and rejection sampling (Week 11) are the same loop with the filter in place. Figure: scripts/lecture02_experiments.py; P04 reproduces the effect on twelve sentences.
+Held-out bits per byte 1.299 → 1.940 over 5 rounds; distinct token types in the corpus 12,211 → 8,205. A round-5 sample: “One to the współpr He ICT_author need nice the,Afterกังวล so little stomach his rabbit was was time it отзывы all, windo”. This is model collapse in its simplest form (Shumailov et al., 2024): the tails of the distribution are lost first. The fix is the previous section's tool, a reference model or judge that filters synthetic data before it is trained on; Cosmopedia (Week 8) and rejection sampling (Week 11) are the same loop with the filter in place. Figure: scripts/lecture02_experiments.py; P04 reproduces the effect on twelve sentences.
 
 ---
 

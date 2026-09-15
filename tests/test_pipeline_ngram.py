@@ -40,19 +40,20 @@ def test_interpolation_keeps_every_probability_positive_and_normalized():
     assert all(w > 0 for w in lm.weights) and math.isclose(sum(lm.weights), 1.0)
     unseen_history = [vocab_size - 1, vocab_size - 1]
     assert lm.prob(unseen_history, 0) > 0
-    # the mixture over all tokens plus EOS sums to one for a seen history
-    total = sum(lm.prob([BOS, BOS], t) for t in range(vocab_size)) + lm.prob([BOS, BOS], EOS)
-    assert total <= 1.0 + 1e-9  # the uniform floor spreads a little mass over unseen ids
+    # the mixture over all ids plus EOS sums to one for seen, partially seen, and unseen histories
+    for history in ([BOS, BOS], [0, 1], [vocab_size - 1], unseen_history):
+        total = sum(lm.prob(history, t) for t in range(vocab_size)) + lm.prob(history, EOS)
+        assert math.isclose(total, 1.0, abs_tol=1e-9), history
 
 
 def test_bits_per_byte_and_perplexity_agree_on_uniform_digits():
     digits = [list(range(10))] * 5
     lm = NGramLM(order=1, vocab_size=10)
     lm.fit(digits)
-    lm.weights = [1.0, 0.0]  # uniform over 10 ids: perplexity 10 per token, EOS included
-    assert math.isclose(perplexity(lm, digits), 10.0)
+    lm.weights = [1.0, 0.0]  # uniform over the 10 ids plus EOS: perplexity 11 per token
+    assert math.isclose(perplexity(lm, digits), 11.0)
     text_bytes = sum(len("0123456789") for _ in digits)
-    assert math.isclose(bits_per_byte(lm, digits, text_bytes), 11 * math.log2(10) / 10)
+    assert math.isclose(bits_per_byte(lm, digits, text_bytes), 11 * math.log2(11) / 10)
 
 
 def test_sampler_returns_training_tokens_and_stops():
@@ -64,6 +65,8 @@ def test_sampler_returns_training_tokens_and_stops():
         sample = lm.sample(rng, max_tokens=30)
         assert all(0 <= t < vocab_size for t in sample)
         assert len(sample) <= 30
+    lm.weights = [1.0, 0.0, 0.0]  # pure uniform over ids plus EOS: some samples must stop before the cap
+    assert min(len(lm.sample(random.Random(s), max_tokens=50)) for s in range(30)) < 50
 
 
 def test_byte_tokenizer_and_reference_scorer_prefer_in_domain_text():

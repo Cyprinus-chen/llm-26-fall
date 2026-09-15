@@ -68,8 +68,8 @@ It runs offline with the standard library only.
 | Perplexity: interpretation | E03 | Uniform digits give perplexity 10 for every length |
 | Sentence sampling | P01 | Bigram sampling from BOS until EOS |
 | Smoothing N-gram LMs in one page | P02 (optional) | The 8×8 Laplace probability and reconstituted-count tables recomputed from the counts |
-| Smoothing N-gram LMs in one page | P03 (optional) | Interpolation weight tuned on a held-out sentence (best $\lambda=0.6$); test perplexity 6.04 and 0.864 bits per byte, the course's shared unit |
-| The loop, in miniature | P04 (optional) | A bigram retrained on its own samples: held-out loss 1.62 → 2.12 in five rounds on twelve sentences |
+| Smoothing N-gram LMs in one page | P03 (optional) | Interpolation weight tuned on a held-out sentence (best $\lambda=0.6$); test perplexity 5.61 and 0.829 bits per byte, the course's shared unit |
+| The loop, in miniature | P04 (optional) | A bigram retrained on its own samples: held-out loss 1.59 → 2.06 in five rounds on twelve sentences |
 
 ## Differences from the Spring deck
 
@@ -89,7 +89,7 @@ It runs offline with the standard library only.
   adds three rows of bits per byte on the course's held-out shards
   (TinyStories, OpenWebText, Fineweb-Edu-Chinese; 24 MB of training text
   each, Qwen3 tokenizer, interpolation weights tuned on a dev split):
-  trigram 1.13 / 2.04 / 2.05.
+  trigram 1.12 / 2.03 / 2.04.
   These are the first points of the evaluation that `pipeline/eval.py` will
   apply to every later model.
 - Slide *Smoothing in one page* gained two sentences on Kneser–Ney, because
@@ -98,8 +98,8 @@ It runs offline with the standard library only.
   section but the last page of the first one (instructor's decision,
   September 15, 2026), and the deck has three outlines instead of four.
 - New slide *N-grams in a 2026 pipeline* (end of the evaluation section): a Wikipedia 3-gram model scores
-  1200 OpenWebText documents (median 2.56 bits per byte; cut at the worst third,
-  2.67); TinyStories documents sit near 2.79. This is the CCNet /
+  1200 OpenWebText documents (median 2.52 bits per byte; cut at the worst third,
+  2.63); TinyStories documents sit near 2.75. This is the CCNet /
   RedPajama-V2 `ccnet_perplexity` signal and stage 2b of the pipeline
   (`pipeline/filters/lm_score.py`).
 - New slide *The loop, in miniature*: a bigram on TinyStories retrained on
@@ -115,3 +115,7 @@ It runs offline with the standard library only.
 - The experiment script ran on a laptop from small Hugging Face slices because
   the course store was offline on September 15; rerun it on the store's
   full shards before Week 9 and update the JSON.
+- Numbers recomputed on September 15 after an audit found that the interpolated
+  estimator in `pipeline/ngram_lm.py` lost probability mass on unseen histories
+  and counted the uniform floor without EOS; every estimator now sums to one
+  over the ids plus EOS on every history (see `tests/test_pipeline_ngram.py`).

@@ -19,28 +19,28 @@
             0.001,
             0.999
           ],
-          "seconds": 7.7
+          "seconds": 7.1
         },
         "2": {
           "bits_per_byte": 1.299,
-          "token_perplexity": 40.8,
+          "token_perplexity": 40.7,
           "weights": [
             0.001,
-            0.038,
-            0.96
+            0.037,
+            0.961
           ],
-          "seconds": 18.5
+          "seconds": 14.2
         },
         "3": {
-          "bits_per_byte": 1.134,
-          "token_perplexity": 25.4,
+          "bits_per_byte": 1.123,
+          "token_perplexity": 24.6,
           "weights": [
             0.001,
             0.038,
-            0.287,
-            0.673
+            0.242,
+            0.719
           ],
-          "seconds": 31.5
+          "seconds": 25.3
         }
       }
     },
@@ -60,28 +60,28 @@
             0.006,
             0.994
           ],
-          "seconds": 19.9
+          "seconds": 20.7
         },
         "2": {
-          "bits_per_byte": 2.066,
-          "token_perplexity": 593.6,
+          "bits_per_byte": 2.064,
+          "token_perplexity": 591.4,
           "weights": [
             0.014,
-            0.326,
-            0.66
+            0.324,
+            0.662
           ],
-          "seconds": 32.9
+          "seconds": 31.6
         },
         "3": {
-          "bits_per_byte": 2.04,
-          "token_perplexity": 548.2,
+          "bits_per_byte": 2.027,
+          "token_perplexity": 527.3,
           "weights": [
             0.014,
-            0.326,
-            0.534,
-            0.126
+            0.324,
+            0.448,
+            0.213
           ],
-          "seconds": 50.6
+          "seconds": 53.1
         }
       }
     },
@@ -101,28 +101,28 @@
             0.004,
             0.996
           ],
-          "seconds": 25.5
+          "seconds": 36.0
         },
         "2": {
-          "bits_per_byte": 2.1,
-          "token_perplexity": 794.8,
+          "bits_per_byte": 2.099,
+          "token_perplexity": 792.9,
           "weights": [
             0.005,
-            0.353,
-            0.642
+            0.351,
+            0.644
           ],
-          "seconds": 40.7
+          "seconds": 55.9
         },
         "3": {
-          "bits_per_byte": 2.051,
-          "token_perplexity": 681.2,
+          "bits_per_byte": 2.037,
+          "token_perplexity": 650.6,
           "weights": [
             0.005,
-            0.355,
-            0.498,
-            0.141
+            0.356,
+            0.427,
+            0.212
           ],
-          "seconds": 91.2
+          "seconds": 100.9
         }
       }
     }
@@ -131,264 +131,264 @@
     "reference_docs": 15158,
     "reference_bytes": 25213323,
     "web_docs": 1200,
-    "cut_bits_per_byte": 2.667,
-    "web_median": 2.561,
-    "stories_median": 2.792,
+    "cut_bits_per_byte": 2.632,
+    "web_median": 2.524,
+    "stories_median": 2.755,
     "examples": {
       "lowest": {
-        "bits_per_byte": 2.016,
+        "bits_per_byte": 1.986,
         "snippet": "WASHINGTON, DC - OCTOBER 10: U.S. President Donald Trump answers questions from the press during a meeting with former U.S. Secretary of State Henry Kissinger i"
       },
       "median": {
-        "bits_per_byte": 2.561,
-        "snippet": "They lead double lives. Born into poverty in the Bangladeshi district of Cox’s Bazar, Johanara, Aisha, Shumi, Rifa, Suma, Shobe Majaraz, Mayasha and Nargis wake"
+        "bits_per_byte": 2.524,
+        "snippet": "For Disney’s “TRON: Legacy,” Bradley Munkowitz, better known as GMUNK, was the lead animated graphics artist. He assembled and led a team of GFX all-stars who c"
       },
       "highest": {
-        "bits_per_byte": 6.887,
+        "bits_per_byte": 6.756,
         "snippet": "Responses  \"space the H█𥢍ma with grid with latticed ▒n▒ਡh▒Wstormworld Mragged three-dimensional distorted, ਡT█░klsWastatic WxXQtorn yourself ░░░hA35█in ਡxis Q█j"
       }
     },
     "histogram": [
       [
-        2.016,
-        34
+        1.986,
+        29
       ],
       [
-        2.178,
-        140
+        2.145,
+        135
       ],
       [
-        2.34,
-        306
+        2.304,
+        305
       ],
       [
-        2.503,
-        317
+        2.463,
+        321
       ],
       [
-        2.665,
+        2.622,
         176
       ],
       [
-        2.828,
-        94
+        2.781,
+        100
       ],
       [
-        2.99,
-        49
+        2.94,
+        48
       ],
       [
-        3.152,
-        27
+        3.099,
+        29
       ],
       [
-        3.315,
+        3.258,
         15
       ],
       [
-        3.477,
+        3.417,
         9
       ],
       [
-        3.64,
+        3.576,
         6
       ],
       [
-        3.802,
+        3.735,
         4
       ],
       [
-        3.964,
+        3.894,
         7
       ],
       [
-        4.127,
+        4.053,
         4
       ],
       [
-        4.289,
+        4.212,
         1
       ],
       [
-        4.451,
+        4.371,
         1
       ],
       [
-        4.614,
+        4.53,
         1
       ],
       [
-        4.776,
+        4.689,
         1
       ],
       [
-        4.939,
+        4.848,
         1
       ],
       [
-        5.101,
+        5.007,
         0
       ],
       [
-        5.263,
+        5.166,
         0
       ],
       [
-        5.426,
-        3
+        5.325,
+        2
       ],
       [
-        5.588,
-        0
-      ],
-      [
-        5.751,
-        0
-      ],
-      [
-        5.913,
+        5.484,
         1
       ],
       [
-        6.075,
-        1
-      ],
-      [
-        6.238,
-        1
-      ],
-      [
-        6.4,
+        5.643,
         0
       ],
       [
-        6.563,
+        5.802,
+        1
+      ],
+      [
+        5.961,
+        1
+      ],
+      [
+        6.12,
+        1
+      ],
+      [
+        6.279,
         0
       ],
       [
-        6.725,
+        6.438,
+        0
+      ],
+      [
+        6.597,
         1
       ]
     ],
     "stories_histogram": [
       [
-        2.205,
-        2
-      ],
-      [
-        2.253,
-        2
-      ],
-      [
-        2.3,
-        4
-      ],
-      [
-        2.348,
-        8
-      ],
-      [
-        2.396,
-        10
-      ],
-      [
-        2.443,
-        8
-      ],
-      [
-        2.491,
-        15
-      ],
-      [
-        2.538,
-        16
-      ],
-      [
-        2.586,
-        17
-      ],
-      [
-        2.634,
-        20
-      ],
-      [
-        2.681,
-        19
-      ],
-      [
-        2.729,
-        27
-      ],
-      [
-        2.776,
-        17
-      ],
-      [
-        2.824,
-        19
-      ],
-      [
-        2.872,
-        18
-      ],
-      [
-        2.919,
-        19
-      ],
-      [
-        2.967,
-        14
-      ],
-      [
-        3.015,
-        10
-      ],
-      [
-        3.062,
-        11
-      ],
-      [
-        3.11,
-        11
-      ],
-      [
-        3.157,
-        12
-      ],
-      [
-        3.205,
-        7
-      ],
-      [
-        3.253,
-        5
-      ],
-      [
-        3.3,
-        5
-      ],
-      [
-        3.348,
-        2
-      ],
-      [
-        3.396,
-        0
-      ],
-      [
-        3.443,
+        2.183,
         1
       ],
       [
-        3.491,
+        2.229,
+        3
+      ],
+      [
+        2.276,
+        4
+      ],
+      [
+        2.322,
+        6
+      ],
+      [
+        2.368,
+        10
+      ],
+      [
+        2.415,
+        9
+      ],
+      [
+        2.461,
+        10
+      ],
+      [
+        2.508,
+        22
+      ],
+      [
+        2.554,
+        11
+      ],
+      [
+        2.601,
+        19
+      ],
+      [
+        2.647,
+        27
+      ],
+      [
+        2.694,
+        20
+      ],
+      [
+        2.74,
+        22
+      ],
+      [
+        2.787,
+        16
+      ],
+      [
+        2.833,
+        18
+      ],
+      [
+        2.879,
+        22
+      ],
+      [
+        2.926,
+        13
+      ],
+      [
+        2.972,
+        10
+      ],
+      [
+        3.019,
+        11
+      ],
+      [
+        3.065,
+        11
+      ],
+      [
+        3.112,
+        11
+      ],
+      [
+        3.158,
+        9
+      ],
+      [
+        3.205,
+        6
+      ],
+      [
+        3.251,
+        5
+      ],
+      [
+        3.297,
+        2
+      ],
+      [
+        3.344,
         0
       ],
       [
-        3.538,
+        3.39,
+        1
+      ],
+      [
+        3.437,
         0
       ],
       [
-        3.586,
+        3.483,
+        0
+      ],
+      [
+        3.53,
         1
       ]
     ]
@@ -404,38 +404,38 @@
       },
       {
         "round": 1,
-        "bits_per_byte": 1.479,
+        "bits_per_byte": 1.477,
         "corpus_docs": 2000,
-        "distinct_tokens": 5241,
-        "sample": "Once upon a help others. and prepared for worrying about the bear and showed the pan! big tree. From that Mommy was not Spot! shared the know what are going to "
+        "distinct_tokens": 5303,
+        "sample": " so much.\nOne dad very nice for kids who him."
       },
       {
         "round": 2,
-        "bits_per_byte": 1.597,
+        "bits_per_byte": 1.593,
         "corpus_docs": 2000,
-        "distinct_tokens": 4447,
-        "sample": "Billy was very sad. True is with met a and had had the park. He thought forAs Sam"
+        "distinct_tokens": 5648,
+        "sample": " tell all day graceful andSam felt so colorful markers back. They played together. wartości help the's friend is fragile start.context her day a big a to experi"
       },
       {
         "round": 3,
-        "bits_per_byte": 1.714,
+        "bits_per_byte": 1.707,
         "corpus_docs": 2000,
-        "distinct_tokens": 4013,
-        "sample": " nice!\"Once's art and to She saw named day BenJack could wantHello, saw bow now mom said a shoe tried again pitch catch adult there thermometer and her room wit"
+        "distinct_tokens": 6271,
+        "sample": "Once tocba and had never His"
       },
       {
         "round": 4,
-        "bits_per_byte": 1.829,
+        "bits_per_byte": 1.823,
         "corpus_docs": 2000,
-        "distinct_tokens": 3746,
-        "sample": " wanted He loved girl on, let covered the \" never careless will her.. things to bush friend He said says woke to Max fake his complained again. back in the"
+        "distinct_tokens": 7082,
+        "sample": "One day you was bike for play day closer blew someone who came outside"
       },
       {
         "round": 5,
-        "bits_per_byte": 1.941,
+        "bits_per_byte": 1.94,
         "corpus_docs": 2000,
-        "distinct_tokens": 3552,
-        "sample": "Once upon was isFred They coin!\" upon storm were a scarf dressed in my named Mom out a time look, someday like arc with a shelf Tim creature not Tim"
+        "distinct_tokens": 8205,
+        "sample": "One to the współpr He ICT_author need nice the,Afterกังวล so little stomach his rabbit was was time it отзывы all, window house be a It. The be. a put on пример"
       }
     ],
     "n_samples": 2000

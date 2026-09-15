@@ -64,12 +64,19 @@ class NGramLM:
 
     # ------------------------------------------------------------------ score
     def _order_probs(self, history: Sequence[int], token: int) -> list[float]:
-        """Probability of ``token`` under each order 0..N (0 = uniform)."""
-        probs = [1.0 / self.vocab_size]
+        """Probability of ``token`` under each order 0..N.
+
+        Every entry is a proper distribution over the ``vocab_size`` ids plus EOS:
+        order 0 is uniform over those ``vocab_size + 1`` outcomes, and an order
+        whose history was never seen backs off to the next lower order's
+        estimate. Without that, the mixture would drop the weight of the
+        unseen order and no longer sum to one.
+        """
+        probs = [1.0 / (self.vocab_size + 1)]
         for k in range(1, self.order + 1):
             h = tuple(history[len(history) - (k - 1) :]) if k > 1 else ()
             total = self.context_totals[k].get(h, 0)
-            probs.append(self.counts[k][h][token] / total if total else 0.0)
+            probs.append(self.counts[k][h][token] / total if total else probs[-1])
         return probs
 
     def prob(self, history: Sequence[int], token: int) -> float:
@@ -109,13 +116,12 @@ class NGramLM:
     def sample(self, rng, max_tokens: int = 64) -> list[int]:
         """Draw one sequence from the interpolated model (BOS to EOS).
 
-        Samples the mixture exactly: pick an order with probability
-        ``weights[k]``, then draw from that order's conditional. Orders whose
-        history was never seen fall back to the next lower order, and order 0
-        draws uniformly from the tokens seen in training.
+        Samples the mixture exactly as ``prob`` defines it: pick an order with
+        probability ``weights[k]``, then draw from that order's conditional;
+        an order whose history was never seen backs off to the next lower
+        order (the rule ``_order_probs`` uses), and order 0 draws uniformly
+        from the ``vocab_size`` ids plus EOS.
         """
-        if not hasattr(self, "_uniform_pool"):
-            self._uniform_pool = sorted(self.seen - {BOS})
         history = [BOS] * (self.order - 1)
         out: list[int] = []
         while len(out) < max_tokens:
@@ -129,7 +135,8 @@ class NGramLM:
                     break
                 k -= 1
             if token is None:
-                token = rng.choice(self._uniform_pool)
+                draw = rng.randrange(self.vocab_size + 1)
+                token = EOS if draw == self.vocab_size else draw
             if token == EOS:
                 break
             out.append(token)
