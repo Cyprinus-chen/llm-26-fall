@@ -29,6 +29,11 @@ readings). The numbers on the perplexity, filter, and loop slides come from
 `scripts/lecture02_experiments.py` on held-out shards with the Qwen3
 tokenizer; `assets/lecture02-results.json` holds the full output.
 
+The companion note [How good is a language model? The metrics in use](../../docs/lecture-02-lm-metrics.md)
+shows that loss in nats, bits per token, perplexity, and bits per byte are
+one quantity in four units and cites where GPT-3, Kaplan, Chinchilla, Llama 3,
+DeepSeek, OLMo 2, DCLM, and Qwen3 report each one; the PDFs are in `papers/`.
+
 ## Teaching sequence
 
 | Period | Minutes | Slides | Content and activity |
