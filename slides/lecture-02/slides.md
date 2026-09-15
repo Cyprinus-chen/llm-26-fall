@@ -18,7 +18,7 @@ Ported from Fudan Spring Lecture 02, https://baojian.github.io/llm-26/slides/lec
 ## Outline
 
 <ul class="outline-topics">
-<li aria-current="step">Probabilistic N-gram LMs and smoothing</li>
+<li aria-current="step">N-gram LMs and Smoothing</li>
 <li>Evaluating LMs and Perplexity</li>
 <li>Neural Probabilistic LMs</li>
 </ul>
@@ -355,7 +355,7 @@ One page replaces the Spring section of nine slides, placed at the end of the fi
 ## Outline
 
 <ul class="outline-topics">
-<li>Probabilistic N-gram LMs and smoothing</li>
+<li>N-gram LMs and Smoothing</li>
 <li aria-current="step">Evaluating LMs and Perplexity</li>
 <li>Neural Probabilistic LMs</li>
 </ul>
@@ -543,7 +543,7 @@ Source: Spring Lecture 02 slide 28, https://baojian.github.io/llm-26/slides/lect
 ## Outline
 
 <ul class="outline-topics">
-<li>Probabilistic N-gram LMs and smoothing</li>
+<li>N-gram LMs and Smoothing</li>
 <li>Evaluating LMs and Perplexity</li>
 <li aria-current="step">Neural Probabilistic LMs</li>
 </ul>
