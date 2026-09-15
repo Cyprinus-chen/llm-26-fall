@@ -20,12 +20,14 @@ The deck is a port of the instructor's
 [Spring 2026 Lecture 02](https://baojian.github.io/llm-26/slides/lecture-02-slides/)
 into the shared Reveal.js template. The content is kept; dense Spring slides
 are split so that each slide holds one idea at the template's font sizes.
-The deck has **40 slides**, including four repeated outlines and a final
-reading page. Smoothing is one page; the Spring section of nine slides is
-kept in the notebook as optional practices P02 and P03. Two slides are new
-in the Fall version and tie the lecture to the course pipeline: the n-gram
-perplexity filter (after smoothing) and the self-training loop (before the
-readings). The numbers on the perplexity, filter, and loop slides come from
+The deck has **39 slides** in three sections (N-gram LMs and smoothing;
+evaluation and perplexity; neural probabilistic LMs), with three repeated
+outlines and a final reading page. Smoothing is one page at the end of the
+first section, right after the count table and OOV where the zeros are on
+screen; the Spring section of nine slides is kept in the notebook as optional
+practices P02 and P03. Two slides are new in the Fall version and tie the
+lecture to the course pipeline: the n-gram perplexity filter (closing the
+evaluation section) and the self-training loop (before the readings). The numbers on the perplexity, filter, and loop slides come from
 `scripts/lecture02_experiments.py` on held-out shards with the Qwen3
 tokenizer; `assets/lecture02-results.json` holds the full output.
 
@@ -41,13 +43,13 @@ DeepSeek, OLMo 2, DCLM, and Qwen3 report each one; the PDFs are in `papers/`.
 | 1 | 0–10 | 1–4 | Title, outline, why sentences need probabilities: speech recognition, MT, spell correction |
 | 1 | 10–25 | 5–9 | Unknown data distribution, KL objective, empirical log-likelihood, factorization, training samples |
 | 1 | 25–45 | 10–15 | Chain rule, next-token prediction clip (play 2 min), unigram/bigram/trigram, Markov assumption, build steps, parameter matrix and MLE |
-| 2 | 0–15 | 16–20 | E01 (5 min): toy bigram MLE; restaurant-review counts; sentence boundaries; OOV and UNK |
-| 2 | 15–35 | 21–26 | Outline; data split and extrinsic evaluation; E02 (3 min): propose a metric; perplexity; E03 (3 min): digits example; WSJ perplexities |
-| 2 | 35–45 | 27–29 | Unigram sampling, interval figure, WSJ samples; bigram sampling question |
-| 3 | 0–15 | 30–33 | Outline; smoothing in one page (zero probabilities, add-δ, interpolation, Kneser–Ney in two sentences); the perplexity filter as stage 2b of the pipeline; N-gram summary |
-| 3 | 15–37 | 34–38 | Outline; four NPLM pages: task and embeddings, forward inference, training, improvements over N-grams (with the Week 9 preview) |
-| 3 | 37–42 | 39 | The loop in miniature: a bigram retrained on its own samples; why every self-improving pipeline needs a filter and a judge |
-| 3 | 42–45 | 40 | Toolkits and readings; preview of Week 3 (embeddings) |
+| 2 | 0–20 | 16–21 | E01 (5 min): toy bigram MLE; restaurant-review counts; sentence boundaries; OOV and UNK; smoothing in one page (zeros in the table, add-δ, interpolation, Kneser–Ney in two sentences) |
+| 2 | 20–38 | 22–27 | Outline; data split and extrinsic evaluation; E02 (3 min): propose a metric, and one zero makes the test set score −∞; perplexity; E03 (3 min): digits example; WSJ and course bits-per-byte rows |
+| 2 | 38–45 | 28–30 | Unigram sampling, interval figure, WSJ samples; bigram sampling question |
+| 3 | 0–10 | 31–32 | The perplexity filter as stage 2b of the pipeline; N-gram summary |
+| 3 | 10–36 | 33–37 | Outline; four NPLM pages: task and embeddings, forward inference, training, improvements over N-grams (with the Week 9 preview) |
+| 3 | 36–42 | 38 | The loop in miniature: a bigram retrained on its own samples; why every self-improving pipeline needs a filter and a judge |
+| 3 | 42–45 | 39 | Toolkits and readings; preview of Week 3 (embeddings) |
 
 Breaks fall between periods and are outside the 135 teaching minutes. The three
 E exercises total 11 minutes; the notebook's P01–P04 are for after class. These are
@@ -92,7 +94,10 @@ It runs offline with the standard library only.
   apply to every later model.
 - Slide *Smoothing in one page* gained two sentences on Kneser–Ney, because
   the NPLM results table names back-off KN as the baseline.
-- New slide *N-grams in a 2026 pipeline*: a Wikipedia 3-gram model scores
+- The Spring outline had four sections; smoothing is no longer its own
+  section but the last page of the first one (instructor's decision,
+  September 15, 2026), and the deck has three outlines instead of four.
+- New slide *N-grams in a 2026 pipeline* (end of the evaluation section): a Wikipedia 3-gram model scores
   1200 OpenWebText documents (median 2.56 bits per byte; cut at the worst third,
   2.67); TinyStories documents sit near 2.79. This is the CCNet /
   RedPajama-V2 `ccnet_perplexity` signal and stage 2b of the pipeline

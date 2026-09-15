@@ -9,7 +9,7 @@
 <p class="byline">Baojian Zhou<br>School of Data Science<br>Fudan University<br>September 16, 2026</p>
 
 Note:
-Ported from Fudan Spring Lecture 02, https://baojian.github.io/llm-26/slides/lecture-02-slides/. Open with the question: how can a model assign a probability to a sentence? Three 45-minute periods: probabilistic N-gram LMs and evaluation in periods 1–2, smoothing and neural probabilistic LMs in period 3.
+Ported from Fudan Spring Lecture 02, https://baojian.github.io/llm-26/slides/lecture-02-slides/. Open with the question: how can a model assign a probability to a sentence? Three 45-minute periods: probabilistic N-gram LMs with smoothing and evaluation in periods 1–2, the perplexity filter and neural probabilistic LMs in period 3.
 
 ---
 
@@ -18,9 +18,8 @@ Ported from Fudan Spring Lecture 02, https://baojian.github.io/llm-26/slides/lec
 ## Outline
 
 <ul class="outline-topics">
-<li aria-current="step">Probabilistic N-gram LMs</li>
+<li aria-current="step">Probabilistic N-gram LMs and smoothing</li>
 <li>Evaluating LMs and Perplexity</li>
-<li>Smoothing N-gram LMs</li>
 <li>Neural Probabilistic LMs</li>
 </ul>
 
@@ -335,14 +334,29 @@ Connect to Lecture 01: subword tokenizers make OOV rare at the token level, but 
 
 ---
 
+<!-- .slide: id="smoothing" -->
+
+## Smoothing N-gram LMs in one page
+
+<p><strong>Problem:</strong> most cells of the bigram table are 0, so an unseen $n$-gram such as $q(\text{offer} \mid \text{denied the}) = 0$ gives every sentence containing it probability 0. <strong>Fix:</strong> move a little mass from seen events to unseen ones.</p>
+<p><strong>Add-$\delta$</strong> (Laplace when $\delta=1$):</p>
+<p>$$P_{\text{Add}}(w_i\mid w_{i-1}) =\frac{C(w_{i-1}w_i)+\delta}{C(w_{i-1})+\delta|V|}$$</p>
+<p><strong>Interpolation</strong> ($\lambda_i$ tuned on held-out data, $\sum_i\lambda_i=1$):</p>
+<p>$$P_{\text{Int}}(w_n\mid w_{n-2}w_{n-1}) = \lambda_1 P(w_n\mid w_{n-2}w_{n-1}) + \lambda_2 P(w_n\mid w_{n-1}) + \lambda_3 P(w_n)$$</p>
+<p class="caption"><strong>Kneser–Ney</strong> backs off by how many distinct contexts a word follows (<em>Francisco</em>: almost only after <em>San</em>); KenLM trains it, the baseline in the NPLM table. Neural LMs need no count smoothing.</p>
+
+Note:
+One page replaces the Spring section of nine slides, placed at the end of the first section right after the count table and OOV, where the zeros are on screen; Exercise E02 in the next section shows what a single zero does to a test set. Add-one on the Berkeley Restaurant counts moves too much mass: $C(\text{i want})$ falls from 827 to a reconstituted 527 with $|V|=1446$; that is why $\delta \lt 1$ and interpolation are preferred. Notebook practices P02 (Laplace tables) and P03 (Good–Turing) keep the full worked examples for students who want them. Source: Spring Lecture 02 slides 20–27, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/19.
+
+---
+
 <!-- .slide: class="outline-slide" id="outline-evaluation" -->
 
 ## Outline
 
 <ul class="outline-topics">
-<li>Probabilistic N-gram LMs</li>
+<li>Probabilistic N-gram LMs and smoothing</li>
 <li aria-current="step">Evaluating LMs and Perplexity</li>
-<li>Smoothing N-gram LMs</li>
 <li>Neural Probabilistic LMs</li>
 </ul>
 
@@ -493,38 +507,6 @@ Higher order gives locally fluent phrases but still no global coherence. Samples
 
 ---
 
-<!-- .slide: class="outline-slide" id="outline-smoothing" -->
-
-## Outline
-
-<ul class="outline-topics">
-<li>Probabilistic N-gram LMs</li>
-<li>Evaluating LMs and Perplexity</li>
-<li aria-current="step">Smoothing N-gram LMs</li>
-<li>Neural Probabilistic LMs</li>
-</ul>
-
-Note:
-Period 3 begins here. Source: Spring Lecture 02 slide 19, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/18.
-
----
-
-<!-- .slide: id="smoothing" -->
-
-## Smoothing N-gram LMs in one page
-
-<p><strong>Problem:</strong> an unseen $n$-gram gives $q(\text{offer} \mid \text{denied the}) = 0$: probability 0, infinite perplexity. <strong>Fix:</strong> move a little mass from seen events to unseen ones.</p>
-<p><strong>Add-$\delta$</strong> (Laplace when $\delta=1$):</p>
-<p>$$P_{\text{Add}}(w_i\mid w_{i-1}) =\frac{C(w_{i-1}w_i)+\delta}{C(w_{i-1})+\delta|V|}$$</p>
-<p><strong>Interpolation</strong> ($\lambda_i$ tuned on held-out data, $\sum_i\lambda_i=1$):</p>
-<p>$$P_{\text{Int}}(w_n\mid w_{n-2}w_{n-1}) = \lambda_1 P(w_n\mid w_{n-2}w_{n-1}) + \lambda_2 P(w_n\mid w_{n-1}) + \lambda_3 P(w_n)$$</p>
-<p class="caption"><strong>Kneser–Ney</strong> backs off by how many distinct contexts a word follows (<em>Francisco</em>: almost only after <em>San</em>); KenLM trains it, the baseline in the NPLM table. Neural LMs need no count smoothing.</p>
-
-Note:
-One page replaces the Spring section of nine slides. Add-one on the Berkeley Restaurant counts moves too much mass: $C(\text{i want})$ falls from 827 to a reconstituted 527 with $|V|=1446$; that is why $\delta \lt 1$ and interpolation are preferred. Notebook practices P02 (Laplace tables) and P03 (Good–Turing) keep the full worked examples for students who want them. Source: Spring Lecture 02 slides 20–27, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/19.
-
----
-
 <!-- .slide: id="ngram-filter" -->
 
 ## N-grams in a 2026 pipeline: the perplexity filter
@@ -534,7 +516,7 @@ One page replaces the Spring section of nine slides. Add-one on the Berkeley Res
 <p class="caption">CCNet, RedPajama-V2 (<code>ccnet_perplexity</code>), and Dolma keep web text that a Wikipedia n-gram model finds predictable. Closest to Wikipedia here: a wire-service news paragraph (2.02 bits per byte); farthest: a page of garbled box-drawing characters (6.89).</p>
 
 Note:
-This is stage 2b of the course data pipeline (docs/pretraining-plan.md, Section 4): a reference n-gram model trained on 15158 Wikipedia articles (25 MB of WikiText-103) scores every web document in bits per byte; CCNet keeps the head and middle thirds. Median web score 2.56, median TinyStories score 2.79: children's stories are far from Wikipedia, which is exactly what a reference model measures, so the threshold is a policy choice, not a quality oracle. Students run this on 100 documents in the Week 2 task and on the full mixture in Week 5 (pipeline/filters/lm_score.py). Figure: scripts/lecture02_experiments.py, Qwen3 tokenizer.
+Period 3 begins here. This is stage 2b of the course data pipeline (docs/pretraining-plan.md, Section 4): a reference n-gram model trained on 15158 Wikipedia articles (25 MB of WikiText-103) scores every web document in bits per byte; CCNet keeps the head and middle thirds. Median web score 2.56, median TinyStories score 2.79: children's stories are far from Wikipedia, which is exactly what a reference model measures, so the threshold is a policy choice, not a quality oracle. Students run this on 100 documents in the Week 2 task and on the full mixture in Week 5 (pipeline/filters/lm_score.py). Figure: scripts/lecture02_experiments.py, Qwen3 tokenizer.
 
 ---
 
@@ -561,9 +543,8 @@ Source: Spring Lecture 02 slide 28, https://baojian.github.io/llm-26/slides/lect
 ## Outline
 
 <ul class="outline-topics">
-<li>Probabilistic N-gram LMs</li>
+<li>Probabilistic N-gram LMs and smoothing</li>
 <li>Evaluating LMs and Perplexity</li>
-<li>Smoothing N-gram LMs</li>
 <li aria-current="step">Neural Probabilistic LMs</li>
 </ul>
 
