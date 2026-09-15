@@ -15,7 +15,7 @@ text, expressed per token, per byte, per character, or exponentiated.
 Let a test corpus have $T$ tokens and $B$ UTF-8 bytes under the model's
 tokenizer, and let
 
-$$\ell \;=\; -\frac{1}{T}\sum_{t=1}^{T} \log p_\theta\!\left(w_t \mid w_{1:t-1}\right)$$
+$$\ell = -\frac{1}{T}\sum_{t=1}^{T} \log p_\theta\left(w_t \mid w_{1:t-1}\right)$$
 
 be the average negative log probability per token in nats (natural log).
 Then:
