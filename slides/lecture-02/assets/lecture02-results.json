@@ -1,0 +1,443 @@
+{
+  "tokenizer": "Qwen/Qwen3-0.6B tokenizer.json",
+  "vocab_size": 151669,
+  "train_cap_mb": 24,
+  "held_out": {
+    "TinyStories": {
+      "label": "TinyStories v2 (stories)",
+      "train_docs": 31275,
+      "train_tokens": 6076505,
+      "test_docs": 2000,
+      "test_bytes": 1589308,
+      "test_tokens": 384017,
+      "bytes_per_token": 4.14,
+      "orders": {
+        "1": {
+          "bits_per_byte": 2.072,
+          "token_perplexity": 370.2,
+          "weights": [
+            0.001,
+            0.999
+          ],
+          "seconds": 7.7
+        },
+        "2": {
+          "bits_per_byte": 1.299,
+          "token_perplexity": 40.8,
+          "weights": [
+            0.001,
+            0.038,
+            0.96
+          ],
+          "seconds": 18.5
+        },
+        "3": {
+          "bits_per_byte": 1.134,
+          "token_perplexity": 25.4,
+          "weights": [
+            0.001,
+            0.038,
+            0.287,
+            0.673
+          ],
+          "seconds": 31.5
+        }
+      }
+    },
+    "OpenWebText": {
+      "label": "OpenWebText (English web)",
+      "train_docs": 5103,
+      "train_tokens": 5517807,
+      "test_docs": 1200,
+      "test_bytes": 6677122,
+      "test_tokens": 1495702,
+      "bytes_per_token": 4.46,
+      "orders": {
+        "1": {
+          "bits_per_byte": 2.485,
+          "token_perplexity": 2171.9,
+          "weights": [
+            0.006,
+            0.994
+          ],
+          "seconds": 19.9
+        },
+        "2": {
+          "bits_per_byte": 2.066,
+          "token_perplexity": 593.6,
+          "weights": [
+            0.014,
+            0.326,
+            0.66
+          ],
+          "seconds": 32.9
+        },
+        "3": {
+          "bits_per_byte": 2.04,
+          "token_perplexity": 548.2,
+          "weights": [
+            0.014,
+            0.326,
+            0.534,
+            0.126
+          ],
+          "seconds": 50.6
+        }
+      }
+    },
+    "Chinese": {
+      "label": "Fineweb-Edu-Chinese V2.1 (Chinese web)",
+      "train_docs": 3030,
+      "train_tokens": 5494874,
+      "test_docs": 1200,
+      "test_bytes": 10274071,
+      "test_tokens": 2237699,
+      "bytes_per_token": 4.59,
+      "orders": {
+        "1": {
+          "bits_per_byte": 2.48,
+          "token_perplexity": 2662.7,
+          "weights": [
+            0.004,
+            0.996
+          ],
+          "seconds": 25.5
+        },
+        "2": {
+          "bits_per_byte": 2.1,
+          "token_perplexity": 794.8,
+          "weights": [
+            0.005,
+            0.353,
+            0.642
+          ],
+          "seconds": 40.7
+        },
+        "3": {
+          "bits_per_byte": 2.051,
+          "token_perplexity": 681.2,
+          "weights": [
+            0.005,
+            0.355,
+            0.498,
+            0.141
+          ],
+          "seconds": 91.2
+        }
+      }
+    }
+  },
+  "filter": {
+    "reference_docs": 15158,
+    "reference_bytes": 25213323,
+    "web_docs": 1200,
+    "cut_bits_per_byte": 2.667,
+    "web_median": 2.561,
+    "stories_median": 2.792,
+    "examples": {
+      "lowest": {
+        "bits_per_byte": 2.016,
+        "snippet": "WASHINGTON, DC - OCTOBER 10: U.S. President Donald Trump answers questions from the press during a meeting with former U.S. Secretary of State Henry Kissinger i"
+      },
+      "median": {
+        "bits_per_byte": 2.561,
+        "snippet": "They lead double lives. Born into poverty in the Bangladeshi district of Cox’s Bazar, Johanara, Aisha, Shumi, Rifa, Suma, Shobe Majaraz, Mayasha and Nargis wake"
+      },
+      "highest": {
+        "bits_per_byte": 6.887,
+        "snippet": "Responses  \"space the H█𥢍ma with grid with latticed ▒n▒ਡh▒Wstormworld Mragged three-dimensional distorted, ਡT█░klsWastatic WxXQtorn yourself ░░░hA35█in ਡxis Q█j"
+      }
+    },
+    "histogram": [
+      [
+        2.016,
+        34
+      ],
+      [
+        2.178,
+        140
+      ],
+      [
+        2.34,
+        306
+      ],
+      [
+        2.503,
+        317
+      ],
+      [
+        2.665,
+        176
+      ],
+      [
+        2.828,
+        94
+      ],
+      [
+        2.99,
+        49
+      ],
+      [
+        3.152,
+        27
+      ],
+      [
+        3.315,
+        15
+      ],
+      [
+        3.477,
+        9
+      ],
+      [
+        3.64,
+        6
+      ],
+      [
+        3.802,
+        4
+      ],
+      [
+        3.964,
+        7
+      ],
+      [
+        4.127,
+        4
+      ],
+      [
+        4.289,
+        1
+      ],
+      [
+        4.451,
+        1
+      ],
+      [
+        4.614,
+        1
+      ],
+      [
+        4.776,
+        1
+      ],
+      [
+        4.939,
+        1
+      ],
+      [
+        5.101,
+        0
+      ],
+      [
+        5.263,
+        0
+      ],
+      [
+        5.426,
+        3
+      ],
+      [
+        5.588,
+        0
+      ],
+      [
+        5.751,
+        0
+      ],
+      [
+        5.913,
+        1
+      ],
+      [
+        6.075,
+        1
+      ],
+      [
+        6.238,
+        1
+      ],
+      [
+        6.4,
+        0
+      ],
+      [
+        6.563,
+        0
+      ],
+      [
+        6.725,
+        1
+      ]
+    ],
+    "stories_histogram": [
+      [
+        2.205,
+        2
+      ],
+      [
+        2.253,
+        2
+      ],
+      [
+        2.3,
+        4
+      ],
+      [
+        2.348,
+        8
+      ],
+      [
+        2.396,
+        10
+      ],
+      [
+        2.443,
+        8
+      ],
+      [
+        2.491,
+        15
+      ],
+      [
+        2.538,
+        16
+      ],
+      [
+        2.586,
+        17
+      ],
+      [
+        2.634,
+        20
+      ],
+      [
+        2.681,
+        19
+      ],
+      [
+        2.729,
+        27
+      ],
+      [
+        2.776,
+        17
+      ],
+      [
+        2.824,
+        19
+      ],
+      [
+        2.872,
+        18
+      ],
+      [
+        2.919,
+        19
+      ],
+      [
+        2.967,
+        14
+      ],
+      [
+        3.015,
+        10
+      ],
+      [
+        3.062,
+        11
+      ],
+      [
+        3.11,
+        11
+      ],
+      [
+        3.157,
+        12
+      ],
+      [
+        3.205,
+        7
+      ],
+      [
+        3.253,
+        5
+      ],
+      [
+        3.3,
+        5
+      ],
+      [
+        3.348,
+        2
+      ],
+      [
+        3.396,
+        0
+      ],
+      [
+        3.443,
+        1
+      ],
+      [
+        3.491,
+        0
+      ],
+      [
+        3.538,
+        0
+      ],
+      [
+        3.586,
+        1
+      ]
+    ]
+  },
+  "self_training": {
+    "rounds": [
+      {
+        "round": 0,
+        "bits_per_byte": 1.299,
+        "corpus_docs": 31275,
+        "distinct_tokens": 12211,
+        "sample": "Once upon a good. She tried to laugh a special gift! Afterwards, Tim. She had a small dog and played under the game called her mum said, \"Mia knocked the water "
+      },
+      {
+        "round": 1,
+        "bits_per_byte": 1.479,
+        "corpus_docs": 2000,
+        "distinct_tokens": 5241,
+        "sample": "Once upon a help others. and prepared for worrying about the bear and showed the pan! big tree. From that Mommy was not Spot! shared the know what are going to "
+      },
+      {
+        "round": 2,
+        "bits_per_byte": 1.597,
+        "corpus_docs": 2000,
+        "distinct_tokens": 4447,
+        "sample": "Billy was very sad. True is with met a and had had the park. He thought forAs Sam"
+      },
+      {
+        "round": 3,
+        "bits_per_byte": 1.714,
+        "corpus_docs": 2000,
+        "distinct_tokens": 4013,
+        "sample": " nice!\"Once's art and to She saw named day BenJack could wantHello, saw bow now mom said a shoe tried again pitch catch adult there thermometer and her room wit"
+      },
+      {
+        "round": 4,
+        "bits_per_byte": 1.829,
+        "corpus_docs": 2000,
+        "distinct_tokens": 3746,
+        "sample": " wanted He loved girl on, let covered the \" never careless will her.. things to bush friend He said says woke to Max fake his complained again. back in the"
+      },
+      {
+        "round": 5,
+        "bits_per_byte": 1.941,
+        "corpus_docs": 2000,
+        "distinct_tokens": 3552,
+        "sample": "Once upon was isFred They coin!\" upon storm were a scarf dressed in my named Mom out a time look, someday like arc with a shelf Tim creature not Tim"
+      }
+    ],
+    "n_samples": 2000
+  }
+}

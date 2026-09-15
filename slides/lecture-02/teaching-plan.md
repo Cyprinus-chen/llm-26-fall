@@ -11,16 +11,23 @@ Students should be able to write the chain-rule factorization of a sentence
 probability, state the Markov assumption behind an $N$-gram model, estimate
 bigram parameters by maximum likelihood, explain perplexity as a normalized
 inverse probability and as a branching factor, apply additive smoothing and
-interpolation to unseen $n$-grams, and describe why a neural probabilistic LM
-replaces count tables with embeddings.
+interpolation to unseen $n$-grams, explain why pretraining pipelines still score
+data with n-gram models, describe why a neural probabilistic LM replaces count
+tables with embeddings, and say what goes wrong when a model is trained on its
+own samples without a filter.
 
 The deck is a port of the instructor's
 [Spring 2026 Lecture 02](https://baojian.github.io/llm-26/slides/lecture-02-slides/)
 into the shared Reveal.js template. The content is kept; dense Spring slides
 are split so that each slide holds one idea at the template's font sizes.
-The deck has **38 slides**, including four repeated outlines and a final
+The deck has **40 slides**, including four repeated outlines and a final
 reading page. Smoothing is one page; the Spring section of nine slides is
-kept in the notebook as optional practices P02 and P03.
+kept in the notebook as optional practices P02 and P03. Two slides are new
+in the Fall version and tie the lecture to the course pipeline: the n-gram
+perplexity filter (after smoothing) and the self-training loop (before the
+readings). The numbers on the perplexity, filter, and loop slides come from
+`scripts/lecture02_experiments.py` on held-out shards with the Qwen3
+tokenizer; `assets/lecture02-results.json` holds the full output.
 
 ## Teaching sequence
 
@@ -32,12 +39,13 @@ kept in the notebook as optional practices P02 and P03.
 | 2 | 0–15 | 16–20 | E01 (5 min): toy bigram MLE; restaurant-review counts; sentence boundaries; OOV and UNK |
 | 2 | 15–35 | 21–26 | Outline; data split and extrinsic evaluation; E02 (3 min): propose a metric; perplexity; E03 (3 min): digits example; WSJ perplexities |
 | 2 | 35–45 | 27–29 | Unigram sampling, interval figure, WSJ samples; bigram sampling question |
-| 3 | 0–12 | 30–32 | Outline; smoothing in one page (zero probabilities, add-δ, interpolation); N-gram summary |
-| 3 | 12–40 | 33–37 | Outline; four NPLM pages: task and embeddings, forward inference, training, improvements over N-grams |
-| 3 | 40–45 | 38 | Toolkits and readings; preview of Week 3 (embeddings) |
+| 3 | 0–15 | 30–33 | Outline; smoothing in one page (zero probabilities, add-δ, interpolation, Kneser–Ney in two sentences); the perplexity filter as stage 2b of the pipeline; N-gram summary |
+| 3 | 15–37 | 34–38 | Outline; four NPLM pages: task and embeddings, forward inference, training, improvements over N-grams (with the Week 9 preview) |
+| 3 | 37–42 | 39 | The loop in miniature: a bigram retrained on its own samples; why every self-improving pipeline needs a filter and a judge |
+| 3 | 42–45 | 40 | Toolkits and readings; preview of Week 3 (embeddings) |
 
 Breaks fall between periods and are outside the 135 teaching minutes. The three
-E exercises total 11 minutes; the notebook's P01–P03 are for after class. These are
+E exercises total 11 minutes; the notebook's P01–P04 are for after class. These are
 **ungraded practices**. Assignment A1 (text and probability) is released this
 week and defined by the course website and the instructors' repository.
 
@@ -53,7 +61,8 @@ It runs offline with the standard library only.
 | Perplexity: interpretation | E03 | Uniform digits give perplexity 10 for every length |
 | Sentence sampling | P01 | Bigram sampling from BOS until EOS |
 | Smoothing N-gram LMs in one page | P02 (optional) | The 8×8 Laplace probability and reconstituted-count tables recomputed from the counts |
-| Smoothing N-gram LMs in one page | P03 (optional) | Good–Turing estimates sum to exactly one; the most frequent word gets zero |
+| Smoothing N-gram LMs in one page | P03 (optional) | Interpolation weight tuned on a held-out sentence (best $\lambda=0.6$); test perplexity 6.04 and 0.864 bits per byte, the course's shared unit |
+| The loop, in miniature | P04 (optional) | A bigram retrained on its own samples: held-out loss 1.62 → 2.12 in five rounds on twelve sentences |
 
 ## Differences from the Spring deck
 
@@ -69,3 +78,30 @@ It runs offline with the standard library only.
 - The closing slide lists Chapter 3 as this lecture's reading; the Spring slide
   pointed to Chapters 4–5 for its next lecture.
 - Whiteboard prompts became timed exercises E01–E03 with revealed answers.
+- Slide *Lower perplexity, better model* keeps the WSJ word perplexities and
+  adds three rows of bits per byte on the course's held-out shards
+  (TinyStories, OpenWebText, Fineweb-Edu-Chinese; 24 MB of training text
+  each, Qwen3 tokenizer, interpolation weights tuned on a dev split):
+  trigram 1.13 / 2.04 / 2.05.
+  These are the first points of the evaluation that `pipeline/eval.py` will
+  apply to every later model.
+- Slide *Smoothing in one page* gained two sentences on Kneser–Ney, because
+  the NPLM results table names back-off KN as the baseline.
+- New slide *N-grams in a 2026 pipeline*: a Wikipedia 3-gram model scores
+  1200 OpenWebText documents (median 2.56 bits per byte; cut at the worst third,
+  2.67); TinyStories documents sit near 2.79. This is the CCNet /
+  RedPajama-V2 `ccnet_perplexity` signal and stage 2b of the pipeline
+  (`pipeline/filters/lm_score.py`).
+- New slide *The loop, in miniature*: a bigram on TinyStories retrained on
+  2,000 of its own samples per round; held-out bits per byte 1.30 → 1.94
+  over 5 rounds. Notebook P04 reproduces the effect on twelve sentences.
+- The summary slide now says "the first neural LM (NPLM)" for today and defers
+  RNNs and Transformers to Week 4; the Spring text said "RNN/Transformer".
+- The readings slide adds Bengio et al. (2003), Jurafsky and Martin Ch. 7,
+  CCNet (Wenzek et al., 2020), and Brants et al. (2007), and drops SRILM.
+- Notebook P03 is interpolation with a held-out $\lambda$ instead of Good–Turing;
+  P04 (self-training loop) is new. Tests in `tests/test_lecture_02.py` check
+  both, plus `tests/test_pipeline_ngram.py` for the shared estimator.
+- The experiment script ran on a laptop from small Hugging Face slices because
+  the course store was offline on September 15; rerun it on the store's
+  full shards before Week 9 and update the JSON.

@@ -38,4 +38,5 @@ Dates, periods, and holidays: [docs/schedule.md](docs/schedule.md). Assessment d
 | [`surveys/`](surveys/lecture-01/README.md) | Weekly surveys: one response file per student, tallied into a chart. |
 | [`tasks/`](tasks/README.md) | Small self-checking exercises: one submission file per student, checked automatically. The [progress board](tasks/PROGRESS.md) shows everyone's merged work. |
 | [`workspace/`](workspace/README.md) | Your own notes, experiments, and exercise solutions. Everything there except its README is ignored by git, so `git pull` never conflicts with your files and your work stays out of any pull request you open. To modify a course file, copy it into `workspace/` and edit the copy: `uv run python workspace/<file>.py`. |
-| `scripts/` | Course tooling: the local server, notebook launcher, survey tally, progress board, and the pretraining-dataset downloader. |
+| `pipeline/` | The course data pipeline, built up lecture by lecture: the n-gram estimator, the bits-per-byte evaluation (`pipeline/eval.py`), and the reference-model document filter. Standard library only. |
+| `scripts/` | Course tooling: the local server, notebook launcher, survey tally, progress board, the pretraining-dataset downloader, and the Lecture 02 experiment script. |
