@@ -115,21 +115,21 @@ The empirical average replaces the expectation. The factorization is exact by th
 
 <!-- .slide: id="training-samples" -->
 
-## Training samples from real-world
+## Diverse training samples
 
 <p>$$\mathcal{D}=\left\{\mathbf{w}^{(i)}\right\}_{i=1}^{N}=$$</p>
 <ul>
 <li>$\mathbf{w}^{(1)}$ : It's hard to recognize speech.</li>
-<li>$\mathbf{w}^{(2)}$ : He briefed reporters on the main contents of the statement.</li>
-<li>$\mathbf{w}^{(3)}$ : The office is about fifteen minutes from my house.</li>
-<li>$\mathbf{w}^{(4)}$ : I want to learn how to play the guitar.</li>
+<li>$\mathbf{w}^{(2)}$ : <code>#include &lt;stdio.h&gt;<br>int main(void) { printf("Hello, world!\n"); }</code></li>
+<li>$\mathbf{w}^{(3)}$ : 今天我们学习如何用语言模型预测下一个词。</li>
+<li>$\mathbf{w}^{(4)}$ : Prove that $1+3+\cdots+(2n-1)=n^2$ for every integer $n\ge1$.</li>
 <li>$\vdots$</li>
-<li>$\mathbf{w}^{(i)}$ : <code>#include&lt;stdio.h&gt; int main(void){ printf("Hello, world!\n");}</code></li>
+<li>$\mathbf{w}^{(i)}$ : <code>{"city": "Shanghai", "temperature_c": 22}</code></li>
 </ul>
-<p>Assume $\mathbf{w}^{(i)} \overset{\text{i.i.d.}}{\sim} p_{\text{data}}$ and train $p_\theta$ to fit these samples.</p>
+<p>Anything represented as a token sequence can be a training sample.</p>
 
 Note:
-Code is text too; the same objective covers it. Source: Spring Lecture 02 slide 7, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/6.
+Read the examples as English prose, C source code, Chinese prose, a mathematical proof problem, and a structured JSON record. The first two examples come from the Spring slide; the others are course-authored illustrations. The C preprocessor directive occupies its own line. The math problem can be stored as text with LaTeX notation, and the JSON record serializes named fields into text. After encoding, each sample is a token sequence; the same next-token objective applies. Other modalities can also be represented as sequences using an appropriate encoding. Encoding makes data representable; selecting useful training data is a separate decision. Retain the preceding slides' i.i.d. sampling assumption as an idealization when fitting $p_\theta$ to the corpus. Source: Spring Lecture 02 slide 7, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/6.
 
 ---
 

@@ -79,6 +79,9 @@ It runs offline with the standard library only.
 - The sentence-probability examples share one slide. Speech is visible first;
   spelling, the MT source, its four candidates, and the ranking appear on
   successive advances. All revealed content remains visible for comparison.
+- The training-sample slide includes English, C code, Chinese, a mathematical
+  proof problem, and a JSON record to illustrate the variety of data that can
+  be represented as token sequences.
 - The smoothing section (Spring slides 20–27: intuition, additive smoothing
   with the 8×8 tables, interpolation, Katz backoff, Good–Turing, Kneser–Ney)
   is one page, per the instructor's decision on September 11, 2026. The
