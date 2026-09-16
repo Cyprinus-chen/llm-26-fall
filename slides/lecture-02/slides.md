@@ -32,37 +32,27 @@ Period 1: the first topic. Return to this outline at each transition. Source: Sp
 
 ## Assign probabilities to sentences
 
-<p><strong>Speech recognition</strong></p>
-<p>$P($<span class="text-good">It's hard to recognize speech</span>$) \gt P($<span class="text-bad">It's hard to wreck a nice beach</span>$)$</p>
+<div class="columns">
+<div>
+<p><strong>Speech recognition</strong><br>$P($<span class="text-good">It's hard to recognize speech</span>$)$<br>$\gt P($<span class="text-bad">It's hard to wreck a nice beach</span>$)$</p>
+</div>
+<div class="fragment" data-fragment-index="0">
+<p><strong>Spell correction</strong><br>$P($<span class="text-good">about fifteen minutes from</span>$)$<br>$\gt P($<span class="text-bad">about fifteen minuets from</span>$)$</p>
+</div>
+</div>
 
-<p><strong>Machine translation (MT):</strong> “他向记者介绍了主要内容” is translated into 4 candidates.</p>
+<blockquote class="fragment" data-fragment-index="1"><p><strong>Machine translation (MT):</strong> “他向记者介绍了主要内容”</p></blockquote>
 <ul>
-<li>$S_1$ = <span class="text-good">He briefed reporters on the main contents of the statement</span></li>
-<li>$S_2$ = He introduced reporters to the main contents of the statement</li>
-<li>$S_3$ = He briefed to reporters the main contents of the statement</li>
-<li>$S_4$ = <span class="text-bad">He to reporters introduced main content</span></li>
+<li class="fragment" data-fragment-index="2">$S_1$ = <span class="text-good">He briefed reporters on the main contents of the statement</span></li>
+<li class="fragment" data-fragment-index="3">$S_2$ = He introduced reporters to the main contents of the statement</li>
+<li class="fragment" data-fragment-index="4">$S_3$ = He briefed to reporters the main contents of the statement</li>
+<li class="fragment" data-fragment-index="5">$S_4$ = <span class="text-bad">He to reporters introduced main content</span></li>
 </ul>
 
-Note:
-Each task needs a score that prefers fluent sentences. In speech recognition the two transcriptions sound alike; only a language model separates them. The MT candidates are all translations of the same Chinese sentence. Source: Spring Lecture 02 slide 3, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/2.
-
----
-
-<!-- .slide: id="assign-probabilities-2" -->
-
-## Assign probabilities to sentences
-
-<p>A good MT model should have</p>
-<p>$P($<span class="text-good">$S_1$</span>$) \gt P(S_2) \approx P(S_3) \gt P($<span class="text-bad">$S_4$</span>$)$</p>
-
-<p><strong>Spell correction</strong></p>
-<ul>
-<li>The office is about fifteen <span class="text-bad">minuets</span> from my house</li>
-<li>$P($<span class="text-good">about fifteen minutes from</span>$) \gt P($<span class="text-bad">about fifteen minuets from</span>$)$</li>
-</ul>
+<p class="fragment" data-fragment-index="6">$P($<span class="text-good">$S_1$</span>$) \gt P(S_2) \approx P(S_3) \gt P($<span class="text-bad">$S_4$</span>$)$</p>
 
 Note:
-“Minuets” is a real word, so a dictionary alone does not catch it. A language model prefers the phrase with “minutes.” Source: Spring Lecture 02 slide 3, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/2.
+Reveal sequence: speech recognition is visible on entry; advance to spelling, then the MT source, each of its four candidates, and finally the ranking. Pause before the last reveal and ask students which sentence should receive the highest probability. Each task needs a score that prefers fluent sentences. The speech transcriptions sound alike; a language model supplies a preference. For spelling, use the full sentence “The office is about fifteen minuets from my house.” “Minuets” is a real word, so a dictionary alone does not catch it; the surrounding words favor “minutes.” The MT candidates share one Chinese source. The ranking is illustrative rather than measured; a complete MT system must also account for source meaning. This combines the former Fall slides 3 and 4 while keeping their examples together. Source: Spring Lecture 02 slide 3, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/2.
 
 ---
 
