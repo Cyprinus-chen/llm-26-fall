@@ -104,7 +104,9 @@ It runs offline with the standard library only.
   pointed to Chapters 4–5 for its next lecture.
 - Whiteboard prompts became timed exercises E01–E03 with revealed answers.
 - Slide *Comparing language models* keeps the WSJ word perplexities and
-  defines BPB and adds three demonstration rows on held-out text
+  defines BPB as summed token loss in bits divided by the test text's UTF-8
+  byte count, with a worked example and perplexity conversion in the notes.
+  It adds three demonstration rows on held-out text
   (TinyStories, OpenWebText, Fineweb-Edu-Chinese; a 24 MiB training cap
   per source, Qwen3 tokenizer, interpolation weights tuned on a dev split):
   trigram 1.12 / 2.03 / 2.04.

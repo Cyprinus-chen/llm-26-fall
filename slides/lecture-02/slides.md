@@ -441,20 +441,24 @@ Expected answer: 10, independent of $t$. Notebook E03 computes it numerically fo
 
 ## Comparing language models
 
-<p><strong>Bits per byte (BPB)</strong> = −log₂ P(test text) ÷ UTF-8 bytes.</p>
+<p><strong>Bits per byte:</strong> $\mathrm{BPB}=-\frac{1}{B}\sum_{d,t}\log_2 p_\theta(w_t^{(d)}\mid w_{1:t-1}^{(d)})$</p>
 
-| Data and metric | Unigram | Bigram | Trigram |
+<p>$B$ = UTF-8 byte count of the test text.<br>Sum over token positions $t$ in each test document $d$.</p>
+
+| Test data / metric (↓ better) | Unigram | Bigram | Trigram |
 | :--- | ---: | ---: | ---: |
 | WSJ: word perplexity | 962 | 170 | 109 |
 | TinyStories: BPB | 2.07 | 1.30 | 1.12 |
 | OpenWebText: BPB | 2.48 | 2.06 | 2.03 |
 | Chinese web: BPB | 2.48 | 2.10 | 2.04 |
 
-Compare columns within each row: lower is better on that test text.
-
-<p class="caption">Demo: Qwen3, 24 MiB/corpus; separate from A1. WSJ: Jurafsky and Martin, Ch. 3.</p>
-
 Note:
+Read the formula as total prediction loss in bits divided by the UTF-8 byte count of the evaluated text. Here d indexes test documents and t indexes scored token positions within a document; history resets at document boundaries. Each contribution is minus log base 2 of the probability assigned to the actual next token, not a sampled token. For an N-gram model, the conditional uses only its retained history. With B = 100 bytes and total loss = 200 bits, BPB = 200/100 = 2 bits per byte. B is a byte count, not a token count: for example, ASCII "a" uses one UTF-8 byte and "中" uses three. The sum includes each document's EOS prediction in this evaluator; BOS is context only, and neither marker adds text bytes. Count bytes after the evaluator's preprocessing, excluding removed whitespace and document separators; do not use the raw file size blindly.
+
+Connection to perplexity: if T is the number of scored predictions and ell is their average negative natural-log probability, BPB = (T/B) × ell/ln(2) = (T/B) × log₂(PPL), with PPL = exp(ell). The same scored tokens and boundaries must be used for both metrics. Thus BPB is an average loss per byte; it is not perplexity divided by bytes or the tokenizer's compression ratio. For a dataset, divide the total loss by the total bytes; do not take an unweighted average of document BPBs. Source: Gao et al. (2020), The Pile, §3.1, https://arxiv.org/html/2101.00027#S3.SS1. The displayed sum is the expanded negative-log-likelihood form of that conversion. Implementation: pipeline/ngram_lm.py::bits_per_byte and pipeline/eval.py.
+
+Compare model columns within each row on the same test text. The course demonstration uses a 24 MiB training cap per corpus and is separate from A1.
+
 The WSJ numbers are from Jurafsky and Martin, Chapter 3. Perplexities are only comparable across models that share the same vocabulary and tokenization; that is why the course reports bits per byte on fixed held-out shards. The three course rows were computed with scripts/lecture02_experiments.py (interpolated models tuned on a dev split, Qwen3 tokenizer, 24 MiB training cap per source; bytes per content token 4.14 / 4.46 / 4.59). The current pipeline/eval.py scores n-grams; later neural-model adapters should share its text, byte, and EOS conventions. Here EOS contributes to loss and the scored token count, but contributes no text bytes. Lower loss does not guarantee better downstream accuracy. Different corpus rows do not measure the intrinsic difficulty of different languages. GPT-3 also reports perplexity: https://arxiv.org/pdf/2005.14165.pdf; leaderboards: https://nlpprogress.com/english/language_modeling.html. Source: Spring Lecture 02 slide 17, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/16.
 
 ---
