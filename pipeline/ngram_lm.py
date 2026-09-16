@@ -4,7 +4,7 @@ The same estimator serves three jobs in the course: the Week 2 baseline on the
 held-out shards, the rung-zero point on the Week 9 scaling plot, and the
 perplexity filter that scores web documents (``pipeline.filters.lm_score``).
 
-    lm = NGramLM(order=3)
+    lm = NGramLM(order=3, vocab_size=tokenizer_vocab_size)
     lm.fit(train_ids)                     # counts
     lm.tune(dev_ids)                      # interpolation weights on held-out data
     bpb = bits_per_byte(lm, test_ids, test_bytes)
@@ -32,8 +32,10 @@ def _pad(ids: Sequence[int], order: int) -> list[int]:
 class NGramLM:
     """Counts up to ``order`` and linear interpolation across orders.
 
-    ``vocab_size`` sets the uniform floor that keeps every probability positive,
-    so an unseen token never yields infinite loss.
+    Predicted outcomes are ids ``0..vocab_size-1`` plus EOS, never BOS.
+    If omitted, the size is inferred as the largest training id plus one.
+    Pass the full tokenizer vocabulary size to cover ids absent from training.
+    A positive uniform weight gives every in-vocabulary outcome positive mass.
     """
 
     order: int = 3
@@ -42,24 +44,41 @@ class NGramLM:
     context_totals: list[dict] = field(default_factory=list)  # context_totals[k][history] -> int
     weights: list[float] = field(default_factory=list)  # weights[0] uniform, weights[k] order k
     seen: set = field(default_factory=set)
+    _configured_vocab_size: int | None = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.order < 1:
+            raise ValueError("order must be positive")
+        if self.vocab_size is not None and self.vocab_size < 1:
+            raise ValueError("vocab_size must be positive")
+        self._configured_vocab_size = self.vocab_size
+
+    def _validate_ids(self, ids: Sequence[int], limit: int | None) -> None:
+        if any(not isinstance(t, int) or t < 0 or (limit is not None and t >= limit) for t in ids):
+            raise ValueError("content ids must be nonnegative integers within the tokenizer vocabulary")
 
     # ------------------------------------------------------------------ train
     def fit(self, sequences: Iterable[Sequence[int]]) -> "NGramLM":
         self.counts = [defaultdict(Counter) for _ in range(self.order + 1)]
         self.context_totals = [defaultdict(int) for _ in range(self.order + 1)]
+        self.seen = set()
+        self.vocab_size = self._configured_vocab_size
         for ids in sequences:
+            ids = list(ids)
+            self._validate_ids(ids, self.vocab_size)
             padded = _pad(ids, self.order)
-            self.seen.update(padded)
+            self.seen.update(ids)
             for i in range(self.order - 1, len(padded)):
                 token = padded[i]
                 for k in range(1, self.order + 1):
                     history = tuple(padded[i - k + 1 : i]) if k > 1 else ()
                     self.counts[k][history][token] += 1
                     self.context_totals[k][history] += 1
+        if not self.context_totals[1]:
+            raise ValueError("training requires at least one document")
         if self.vocab_size is None:
-            self.vocab_size = len(self.seen)
-        if not self.weights:
-            self.weights = [1.0 / (self.order + 1)] * (self.order + 1)
+            self.vocab_size = max(self.seen, default=-1) + 1
+        self.weights = [1.0 / (self.order + 1)] * (self.order + 1)
         return self
 
     # ------------------------------------------------------------------ score
@@ -80,11 +99,14 @@ class NGramLM:
         return probs
 
     def prob(self, history: Sequence[int], token: int) -> float:
+        if token != EOS and not 0 <= token < self.vocab_size:
+            return 0.0
         probs = self._order_probs(history, token)
         return sum(w * p for w, p in zip(self.weights, probs))
 
     def log2_prob_sequence(self, ids: Sequence[int]) -> tuple[float, int]:
         """Total log2 probability of a sequence (including EOS) and the token count."""
+        self._validate_ids(ids, self.vocab_size)
         padded = _pad(ids, self.order)
         total = 0.0
         for i in range(self.order - 1, len(padded)):
@@ -97,9 +119,12 @@ class NGramLM:
         """Set interpolation weights by expectation-maximization on held-out data."""
         rows = []
         for ids in sequences:
+            self._validate_ids(ids, self.vocab_size)
             padded = _pad(ids, self.order)
             for i in range(self.order - 1, len(padded)):
                 rows.append(self._order_probs(padded[i - self.order + 1 : i], padded[i]))
+        if not rows:
+            raise ValueError("tuning requires at least one development document")
         weights = [1.0 / (self.order + 1)] * (self.order + 1)
         for _ in range(iterations):
             posterior = [0.0] * (self.order + 1)
@@ -147,8 +172,10 @@ class NGramLM:
 def bits_per_byte(lm: NGramLM, sequences: Iterable[Sequence[int]], total_bytes: int) -> float:
     """Cross-entropy of the model per UTF-8 byte of the original text.
 
-    Comparable across tokenizers and across model families, unlike word- or
-    token-level perplexity. Pass the byte length of the raw held-out text.
+    Compare tokenizers or model families on identical evaluated text and
+    boundary conventions. Pass the UTF-8 byte length of that text, excluding
+    separators or whitespace removed before tokenization. EOS contributes
+    probability but no text bytes.
     """
     total = 0.0
     for ids in sequences:

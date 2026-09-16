@@ -9,27 +9,55 @@ Produces, for the deck and the teaching plan:
     uv run python scripts/lecture02_experiments.py --data DIR --tokenizer tokenizer.json \
         --owt owt_shard0.parquet --out slides/lecture-02/assets
 
-Writes ``lecture02-results.json`` plus ``held-out-bpb.svg``, ``lm-filter.svg``,
-and ``self-training-loop.svg``. Standard library plus ``tokenizers`` and
-``pyarrow`` (both in the project environment).
+Writes ``lecture02-results.json`` plus Plotly chart specifications
+``lm-filter.json`` and ``self-training-loop.json``. Install the tokenization
+extra for ``tokenizers`` and ``pyarrow``; the notebook itself is standard-library only.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import random
 import sys
 import time
+import unicodedata
 from pathlib import Path
-from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pipeline.eval import make_tokenizer  # noqa: E402
-from pipeline.filters.lm_score import ReferenceScorer, histogram  # noqa: E402
+from pipeline.filters.lm_score import ReferenceScorer, histogram, reference_split  # noqa: E402
 from pipeline.ngram_lm import NGramLM, bits_per_byte, perplexity  # noqa: E402
 
 MB = 1024 * 1024
+
+
+def document_key(text: str) -> str:
+    normalized = unicodedata.normalize("NFKC", " ".join(text.split())).casefold()
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def file_fingerprint(path: Path) -> dict:
+    with path.open("rb") as stream:
+        digest = hashlib.file_digest(stream, "sha256").hexdigest()
+    return dict(file=path.name, bytes=path.stat().st_size, sha256=digest)
+
+
+def split_manifest(source: dict) -> dict:
+    """Ordered document fingerprints and normalized overlap counts for the supplied slices."""
+    out, keys = {}, {}
+    for name in ("train", "dev", "test"):
+        docs = source[name]
+        hashes = [hashlib.sha256(d.encode("utf-8")).hexdigest() for d in docs]
+        keys[name] = {document_key(d) for d in docs}
+        out[name] = dict(documents=len(docs), utf8_bytes=sum(len(d.encode("utf-8")) for d in docs),
+                         ordered_document_hashes_sha256=hashlib.sha256("\n".join(hashes).encode()).hexdigest())
+    out["normalized_cross_split_duplicates"] = {
+        f"{a}/{b}": len(keys[a] & keys[b]) for a, b in (("train", "dev"), ("train", "test"), ("dev", "test"))
+    }
+    return out
 
 
 # ----------------------------------------------------------------------------- data
@@ -84,20 +112,25 @@ def held_out_table(sources: dict, encode, vocab_size: int, orders=(1, 2, 3)) -> 
         dev_ids = [encode(d) for d in src["dev"]]
         test_ids = [encode(d) for d in src["test"]]
         test_bytes = sum(len(d.encode("utf-8")) for d in src["test"])
-        test_tokens = sum(len(x) for x in test_ids)
+        content_tokens = sum(len(x) for x in test_ids)
+        test_tokens = content_tokens + len(test_ids)  # one scored EOS per document
         rows = {}
         for order in orders:
             t0 = time.time()
             lm = NGramLM(order=order, vocab_size=vocab_size).fit(train_ids)
             lm.tune(dev_ids)
-            rows[order] = dict(bits_per_byte=round(bits_per_byte(lm, test_ids, test_bytes), 3),
+            bpb = bits_per_byte(lm, test_ids, test_bytes)
+            rows[order] = dict(bits_per_byte=round(bpb, 3),
+                               loss_nats_per_token=round(bpb * test_bytes * math.log(2) / test_tokens, 6),
                                token_perplexity=round(perplexity(lm, test_ids), 1),
                                weights=[round(w, 3) for w in lm.weights], seconds=round(time.time() - t0, 1))
             print(f"  {name:12s} order {order}: {rows[order]}", flush=True)
         table[name] = dict(label=src["label"], train_docs=len(src["train"]),
                            train_tokens=sum(len(x) for x in train_ids), test_docs=len(src["test"]),
-                           test_bytes=test_bytes, test_tokens=test_tokens,
-                           bytes_per_token=round(test_bytes / test_tokens, 2), orders=rows)
+                           test_bytes=test_bytes, test_tokens=test_tokens, test_content_tokens=content_tokens,
+                           bytes_per_token=round(test_bytes / test_tokens, 2),
+                           bytes_per_content_token=round(test_bytes / content_tokens, 2),
+                           split_manifest=split_manifest(src), orders=rows)
     return table
 
 
@@ -112,20 +145,26 @@ def filter_histogram(data: Path, sources: dict, encode, vocab_size: int, ref_cap
             cur = []
         cur.append(line)
     docs.append("".join(cur))
-    reference = "\n\n".join(cap_bytes(docs, ref_cap))
-    scorer = ReferenceScorer.from_text(reference, encode, vocab_size, order=3)
+    selected = [d.strip() for d in cap_bytes(docs, ref_cap) if d.strip()]
+    split = reference_split(len(selected), 0.05)
+    scorer = ReferenceScorer.from_documents(selected, encode, vocab_size, order=3)
     web = sources["OpenWebText"]["test"]
     scores = scorer.score_many(web)
     stories = scorer.score_many(sources["TinyStories"]["test"][:300])
     order = sorted(range(len(scores)), key=lambda i: scores[i])
     ranked = lambda i: dict(bits_per_byte=round(scores[i], 3), snippet=web[i][:160].replace("\n", " "))
-    cut = sorted(scores)[int(len(scores) * 2 / 3)]  # CCNet keeps head and middle thirds
-    return dict(reference_docs=len(docs), reference_bytes=len(reference.encode()), web_docs=len(web),
+    cut = sorted(scores)[int(len(scores) * 2 / 3)]  # illustrative course policy, not a CCNet default
+    bounds = (min(scores + stories), max(scores + stories))
+    return dict(reference_loaded_docs=len(docs), reference_selected_docs=len(selected),
+                reference_train_docs=split, reference_dev_docs=len(selected) - split,
+                reference_bytes=sum(len(d.encode("utf-8")) for d in selected), web_docs=len(web),
+                stories_docs=len(stories), reference_split="last 5% of selected whole articles for development",
+                histogram_bounds=list(bounds), histogram_bins=30,
                 cut_bits_per_byte=round(cut, 3), web_median=round(sorted(scores)[len(scores) // 2], 3),
                 stories_median=round(sorted(stories)[len(stories) // 2], 3),
                 examples=dict(lowest=ranked(order[0]), median=ranked(order[len(order) // 2]), highest=ranked(order[-1])),
-                histogram=[(round(l, 3), c) for l, c in histogram(scores, bins=30)],
-                stories_histogram=[(round(l, 3), c) for l, c in histogram(stories, bins=30)])
+                histogram=histogram(scores, bins=30, bounds=bounds),
+                stories_histogram=histogram(stories, bins=30, bounds=bounds))
 
 
 # ------------------------------------------------------------------------- part 3
@@ -144,100 +183,48 @@ def self_training_loop(sources: dict, encode, decode, vocab_size: int, rounds: i
         types = len({t for ids in corpus for t in ids})
         sample_text = decode(lm.sample(rng, max_tokens=60))
         series.append(dict(round=r, bits_per_byte=round(bpb, 3), corpus_docs=len(corpus),
+                           corpus_tokens=sum(len(ids) for ids in corpus),
                            distinct_tokens=types, sample=sample_text[:160]))
         print(f"  round {r}: bpb={bpb:.3f} distinct={types} sample={sample_text[:60]!r}", flush=True)
         corpus = [lm.sample(rng, max_tokens=128) for _ in range(n_samples)]
-    return dict(rounds=series, n_samples=n_samples)
+    return dict(rounds=series, n_samples=n_samples, seed=2026, max_sample_tokens=128,
+                design="replace all training documents with capped model samples; keep original dev/test",
+                limitation="training size and length distribution change; no filtering or equal-budget control")
 
 
-# ------------------------------------------------------------------------- svg
-def svg_bars(groups: list[tuple[str, list[float]]], series_names: list[str], ylabel: str, title: str,
-             width=1152, height=560) -> str:
-    left, right, top, bottom = 90, 30, 60, 90
-    plot_w, plot_h = width - left - right, height - top - bottom
-    ymax = max(v for _, vals in groups for v in vals) * 1.15
-    colors = ["#8ab4f8", "#4285f4", "#1a56c4"]
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" font-family="Helvetica, Arial, sans-serif">',
-             f'<text x="{width/2}" y="30" text-anchor="middle" font-size="26" font-weight="bold">{escape(title)}</text>']
-    for i in range(6):
-        y = top + plot_h - i * plot_h / 5
-        v = ymax * i / 5
-        parts.append(f'<line x1="{left}" y1="{y:.1f}" x2="{width-right}" y2="{y:.1f}" stroke="#ddd"/>')
-        parts.append(f'<text x="{left-8}" y="{y+6:.1f}" text-anchor="end" font-size="18">{v:.1f}</text>')
-    gw = plot_w / len(groups)
-    bw = gw * 0.7 / len(series_names)
-    for g, (name, vals) in enumerate(groups):
-        x0 = left + g * gw + gw * 0.15
-        for s, v in enumerate(vals):
-            h = v / ymax * plot_h
-            x = x0 + s * bw
-            parts.append(f'<rect x="{x:.1f}" y="{top+plot_h-h:.1f}" width="{bw-4:.1f}" height="{h:.1f}" fill="{colors[s % 3]}"/>')
-            parts.append(f'<text x="{x+bw/2-2:.1f}" y="{top+plot_h-h-6:.1f}" text-anchor="middle" font-size="17">{v:.2f}</text>')
-        parts.append(f'<text x="{x0+gw*0.35:.1f}" y="{top+plot_h+28}" text-anchor="middle" font-size="20">{escape(name)}</text>')
-    for s, sname in enumerate(series_names):
-        x = left + s * 160
-        parts.append(f'<rect x="{x}" y="{height-34}" width="18" height="18" fill="{colors[s % 3]}"/>')
-        parts.append(f'<text x="{x+24}" y="{height-19}" font-size="18">{escape(sname)}</text>')
-    parts.append(f'<text x="24" y="{top+plot_h/2}" transform="rotate(-90 24 {top+plot_h/2})" text-anchor="middle" font-size="20">{escape(ylabel)}</text>')
-    parts.append("</svg>")
-    return "\n".join(parts)
-
-
-def svg_histogram(hist: list, cut: float, title: str, xlabel: str, second: list | None = None,
-                  labels=("web documents", "TinyStories"), width=1152, height=560) -> str:
-    left, right, top, bottom = 80, 30, 60, 80
-    plot_w, plot_h = width - left - right, height - top - bottom
-    all_bins = hist + (second or [])
-    xmin = min(l for l, _ in all_bins)
-    xmax = max(l for l, _ in all_bins) + (hist[1][0] - hist[0][0])
-    ymax = max(c for _, c in all_bins) * 1.1
-    sx = lambda x: left + (x - xmin) / (xmax - xmin) * plot_w
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" font-family="Helvetica, Arial, sans-serif">',
-             f'<text x="{width/2}" y="30" text-anchor="middle" font-size="26" font-weight="bold">{escape(title)}</text>']
-    for series, color, opacity in ((hist, "#4285f4", 0.85), (second or [], "#f4a142", 0.7)):
-        if not series:
-            continue
-        bw = (series[1][0] - series[0][0])
-        for l, c in series:
-            h = c / ymax * plot_h
-            parts.append(f'<rect x="{sx(l):.1f}" y="{top+plot_h-h:.1f}" width="{sx(l+bw)-sx(l)-1:.1f}" height="{h:.1f}" fill="{color}" opacity="{opacity}"/>')
-    parts.append(f'<line x1="{sx(cut):.1f}" y1="{top}" x2="{sx(cut):.1f}" y2="{top+plot_h}" stroke="#c62828" stroke-width="3" stroke-dasharray="8 6"/>')
-    parts.append(f'<text x="{sx(cut)+8:.1f}" y="{top+22}" font-size="19" fill="#c62828">cut at {cut:.2f} (drop the worst third)</text>')
-    for i in range(6):
-        x = xmin + (xmax - xmin) * i / 5
-        parts.append(f'<text x="{sx(x):.1f}" y="{top+plot_h+26}" text-anchor="middle" font-size="18">{x:.1f}</text>')
-    parts.append(f'<text x="{width/2}" y="{height-20}" text-anchor="middle" font-size="20">{escape(xlabel)}</text>')
-    parts.append(f'<text x="24" y="{top+plot_h/2}" transform="rotate(-90 24 {top+plot_h/2})" text-anchor="middle" font-size="20">documents</text>')
-    for i, (lab, color) in enumerate(zip(labels, ("#4285f4", "#f4a142"))):
-        parts.append(f'<rect x="{width-330}" y="{top+10+i*28}" width="18" height="18" fill="{color}"/>')
-        parts.append(f'<text x="{width-306}" y="{top+25+i*28}" font-size="18">{escape(lab)}</text>')
-    parts.append("</svg>")
-    return "\n".join(parts)
-
-
-def svg_line(points: list[tuple[int, float]], title: str, xlabel: str, ylabel: str, width=1152, height=560) -> str:
-    left, right, top, bottom = 90, 30, 60, 80
-    plot_w, plot_h = width - left - right, height - top - bottom
-    ys = [y for _, y in points]
-    ymin, ymax = min(ys) * 0.9, max(ys) * 1.1
-    sx = lambda x: left + x / (len(points) - 1) * plot_w
-    sy = lambda y: top + plot_h - (y - ymin) / (ymax - ymin) * plot_h
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" font-family="Helvetica, Arial, sans-serif">',
-             f'<text x="{width/2}" y="30" text-anchor="middle" font-size="26" font-weight="bold">{escape(title)}</text>']
-    for i in range(6):
-        y = ymin + (ymax - ymin) * i / 5
-        parts.append(f'<line x1="{left}" y1="{sy(y):.1f}" x2="{width-right}" y2="{sy(y):.1f}" stroke="#ddd"/>')
-        parts.append(f'<text x="{left-8}" y="{sy(y)+6:.1f}" text-anchor="end" font-size="18">{y:.2f}</text>')
-    path = " ".join(f"{'M' if i == 0 else 'L'}{sx(x):.1f},{sy(y):.1f}" for i, (x, y) in enumerate(points))
-    parts.append(f'<path d="{path}" fill="none" stroke="#c62828" stroke-width="4"/>')
-    for x, y in points:
-        parts.append(f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="7" fill="#c62828"/>')
-        parts.append(f'<text x="{sx(x):.1f}" y="{sy(y)-14:.1f}" text-anchor="middle" font-size="18">{y:.2f}</text>')
-        parts.append(f'<text x="{sx(x):.1f}" y="{top+plot_h+26}" text-anchor="middle" font-size="18">{x}</text>')
-    parts.append(f'<text x="{width/2}" y="{height-20}" text-anchor="middle" font-size="20">{escape(xlabel)}</text>')
-    parts.append(f'<text x="24" y="{top+plot_h/2}" transform="rotate(-90 24 {top+plot_h/2})" text-anchor="middle" font-size="20">{escape(ylabel)}</text>')
-    parts.append("</svg>")
-    return "\n".join(parts)
+def plotly_figures(results: dict) -> dict:
+    """Shared-template charts with readable labels and identical histogram bins."""
+    f = results["filter"]
+    width = (f["histogram_bounds"][1] - f["histogram_bounds"][0]) / f["histogram_bins"]
+    traces = []
+    for key, n, name, color in (("histogram", f["web_docs"], "Web", "#4285f4"),
+                                ("stories_histogram", f["stories_docs"], "TinyStories", "#e88925")):
+        traces.append(dict(type="bar", x=[left + width / 2 for left, _ in f[key]],
+                           y=[100 * count / n for _, count in f[key]], width=width * 0.95,
+                           name=f"{name} (n={n:,})", marker=dict(color=color), opacity=0.65,
+                           hovertemplate="BPB: %{x:.2f}<br>Documents: %{y:.1f}%<extra>%{fullData.name}</extra>"))
+    cut = f["cut_bits_per_byte"]
+    histogram_plot = dict(data=traces, layout=dict(
+        barmode="overlay", margin=dict(l=85, r=25, t=55, b=70),
+        hoverlabel=dict(font=dict(size=24)),
+        xaxis=dict(title=dict(text="Reference-model bits per byte")),
+        yaxis=dict(title=dict(text="Documents (%)"), rangemode="tozero"),
+        legend=dict(orientation="h", x=0, y=1.2),
+        shapes=[dict(type="line", x0=cut, x1=cut, y0=0, y1=1, yref="paper",
+                     line=dict(color="#c62828", width=3, dash="dash"))],
+        annotations=[dict(x=cut, y=0.95, yref="paper", text=f"Cut {cut:.2f}",
+                          xanchor="left", xshift=8, showarrow=False, font=dict(size=24, color="#c62828"))]))
+    rounds = results["self_training"]["rounds"]
+    loop_plot = dict(data=[dict(type="scatter", mode="lines+markers",
+        x=[r["round"] for r in rounds], y=[r["bits_per_byte"] for r in rounds],
+        line=dict(color="#c62828", width=4), marker=dict(size=12),
+        customdata=[r["corpus_tokens"] for r in rounds],
+        hovertemplate="Round %{x}<br>BPB: %{y:.3f}<br>Training tokens: %{customdata:,}<extra></extra>")],
+        layout=dict(showlegend=False, margin=dict(l=90, r=25, t=15, b=70),
+                    hoverlabel=dict(font=dict(size=24)),
+                    xaxis=dict(title=dict(text="Round (0 = original corpus)"), dtick=1),
+                    yaxis=dict(title=dict(text="Held-out bits per byte"))))
+    return {"lm-filter.json": histogram_plot, "self-training-loop.json": loop_plot}
 
 
 # ------------------------------------------------------------------------- main
@@ -270,20 +257,16 @@ def main(argv=None) -> int:
     results["self_training"] = self_training_loop(sources, encode, decode, vocab_size, args.rounds, args.samples)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "lecture02-results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False))
-    groups = [(name, [results["held_out"][name]["orders"][o]["bits_per_byte"] for o in (1, 2, 3)])
-              for name in results["held_out"]]
-    (args.out / "held-out-bpb.svg").write_text(svg_bars(
-        groups, ["unigram", "bigram", "trigram"], "bits per byte (lower is better)",
-        f"Interpolated n-gram models, Qwen3 tokens, {args.train_mb} MB of training text per source"))
-    f = results["filter"]
-    (args.out / "lm-filter.svg").write_text(svg_histogram(
-        f["histogram"], f["cut_bits_per_byte"], "Web documents scored by a Wikipedia 3-gram model",
-        "bits per byte under the reference model (lower = closer to Wikipedia)", f["stories_histogram"]))
-    pts = [(r["round"], r["bits_per_byte"]) for r in results["self_training"]["rounds"]]
-    (args.out / "self-training-loop.svg").write_text(svg_line(
-        pts, "A bigram retrained on its own samples", "round (0 = trained on real TinyStories)",
-        "held-out bits per byte"))
+    inputs = [args.tokenizer, args.owt, *sorted(args.data.glob("*.parquet")),
+              args.data / "tinystories-train-head.txt", args.data / "tinystories-valid.txt"]
+    results["provenance"] = dict(
+        inputs=[file_fingerprint(Path(p)) for p in inputs],
+        token_count_policy="test_tokens includes EOS; test_content_tokens and train_tokens exclude EOS",
+        byte_unit="MiB = 1048576 bytes; cap includes the final complete document",
+        note="Input hashes identify the local September 15 snapshot; upstream commit revisions were not recorded.")
+    (args.out / "lecture02-results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    for name, figure in plotly_figures(results).items():
+        (args.out / name).write_text(json.dumps(figure, indent=2) + "\n", encoding="utf-8")
     print("wrote", args.out)
     return 0
 

@@ -2,8 +2,11 @@
 
 import math
 import random
+from collections import Counter
 
-from pipeline.eval import make_tokenizer
+import pytest
+
+from pipeline.eval import evaluate, make_tokenizer, read_documents
 from pipeline.filters.lm_score import ReferenceScorer, histogram
 from pipeline.ngram_lm import BOS, EOS, NGramLM, bits_per_byte, perplexity
 
@@ -78,3 +81,97 @@ def test_byte_tokenizer_and_reference_scorer_prefer_in_domain_text():
     assert close < far
     bins = histogram([close, far, close], bins=4)
     assert sum(c for _, c in bins) == 3
+
+
+@pytest.mark.parametrize("order", [1, 2, 3])
+def test_inferred_vocabulary_covers_sparse_ids_without_counting_boundaries(order):
+    lm = NGramLM(order=order).fit([[100, 200]])
+    assert lm.vocab_size == 201
+    assert lm.seen == {100, 200}
+    for history in ([BOS] * (order - 1), [199] * (order - 1)):
+        mass = sum(lm.prob(history, t) for t in range(201)) + lm.prob(history, EOS)
+        assert mass == pytest.approx(1)
+        assert lm.prob(history, BOS) == 0
+        assert lm.prob(history, 201) == 0
+
+
+def test_refit_resets_inferred_support_counts_and_tuned_weights():
+    lm = NGramLM(order=2).fit([[100, 200]])
+    lm.tune([[100, 200]])
+    lm.fit([[0, 1]])
+    assert lm.vocab_size == 2 and lm.seen == {0, 1}
+    assert lm.weights == pytest.approx([1 / 3] * 3)
+    assert lm.prob([BOS], 200) == 0
+    fixed = NGramLM(order=2, vocab_size=256).fit([[100, 200]])
+    fixed.fit([[0, 1]])
+    assert fixed.vocab_size == 256
+
+
+def test_default_sampler_matches_scored_mixture_including_eos():
+    lm = NGramLM(order=2).fit([[0, 1], [1, 2], [0, 0]])
+    rng = random.Random(37)
+    draws = Counter()
+    for _ in range(12000):
+        sample = lm.sample(rng, max_tokens=1)
+        draws[sample[0] if sample else EOS] += 1
+    for token in [0, 1, 2, EOS]:
+        assert draws[token] / 12000 == pytest.approx(lm.prob([BOS], token), abs=0.015)
+
+
+def test_reserved_or_out_of_vocabulary_content_ids_are_rejected():
+    for ids in ([BOS], [EOS], [3]):
+        with pytest.raises(ValueError, match="content ids"):
+            NGramLM(vocab_size=3).fit([ids])
+    lm = NGramLM(vocab_size=3).fit([[0]])
+    with pytest.raises(ValueError, match="content ids"):
+        lm.tune([[3]])
+    with pytest.raises(ValueError, match="development"):
+        lm.tune([])
+
+
+@pytest.mark.parametrize("text,cap,expected", [("abcdef", 3, ["abc"]),
+    ("你好世界", 2, []), ("你好世界", 3, ["你"]), ("你好世界", 4, ["你"]),
+    ("你好世界", 6, ["你好"]), ("你好世界", 12, ["你好世界"])])
+def test_training_cap_counts_utf8_bytes_at_codepoint_boundaries(tmp_path, text, cap, expected):
+    path = tmp_path / "text.txt"
+    path.write_text(text, encoding="utf-8")
+    docs = read_documents(path, cap)
+    assert docs == expected
+    assert sum(len(d.encode("utf-8")) for d in docs) <= cap
+
+
+def test_windows_newlines_and_blank_document_separators(tmp_path):
+    path = tmp_path / "text.txt"
+    path.write_bytes(b"first\r\nline\r\n\r\nsecond\r\n")
+    assert read_documents(path) == ["first\nline", "second"]
+
+
+def test_evaluation_metrics_use_the_same_eos_count(tmp_path):
+    path = tmp_path / "text.txt"
+    path.write_text("a", encoding="utf-8")
+    result = evaluate(path, path, path, 1, None)
+    assert result["test_content_tokens"] == 1
+    assert result["test_tokens"] == 2 and result["test_bytes"] == 1
+    assert result["loss_nats_per_token"] == pytest.approx(math.log(2), abs=1e-6)
+    assert result["bits_per_byte"] == pytest.approx(
+        result["test_tokens"] / result["test_bytes"] * math.log2(result["token_perplexity"]))
+
+
+def test_reference_split_preserves_internal_paragraphs():
+    docs = ["one\n\narticle", "another\n\narticle"]
+    encoded = []
+    def encode(text):
+        encoded.append(text)
+        return list(text.encode())
+    scorer = ReferenceScorer.from_documents(docs, encode, 256)
+    assert encoded == docs
+    assert scorer.lm.context_totals[1][()] == len(docs[0].encode()) + 1
+    with pytest.raises(ValueError, match="at least two"):
+        ReferenceScorer.from_documents(docs[:1], encode, 256)
+
+
+def test_histograms_can_share_bins_for_different_populations():
+    web = histogram([1, 2, 3], bins=4, bounds=(1, 5))
+    stories = histogram([4, 5], bins=4, bounds=(1, 5))
+    assert [x for x, _ in web] == [x for x, _ in stories]
+    assert sum(c for _, c in web) == 3 and sum(c for _, c in stories) == 2

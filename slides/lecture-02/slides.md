@@ -346,7 +346,7 @@ Connect to Lecture 01: subword tokenizers make OOV rare at the token level, but 
 <p class="caption"><strong>Kneser–Ney</strong> backs off by how many distinct contexts a word follows (<em>Francisco</em>: almost only after <em>San</em>); KenLM trains it, the baseline in the NPLM table. Neural LMs need no count smoothing.</p>
 
 Note:
-One page replaces the Spring section of nine slides, placed at the end of the first section right after the count table and OOV, where the zeros are on screen; Exercise E02 in the next section shows what a single zero does to a test set. Add-one on the Berkeley Restaurant counts moves too much mass: $C(\text{i want})$ falls from 827 to a reconstituted 527 with $|V|=1446$; that is why $\delta \lt 1$ and interpolation are preferred. Notebook practices P02 (Laplace tables) and P03 (Good–Turing) keep the full worked examples for students who want them. Source: Spring Lecture 02 slides 20–27, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/19.
+One page replaces the Spring section of nine slides, placed at the end of the first section right after the count table and OOV, where the zeros are on screen; Exercise E02 in the next section shows what a single zero does to a test set. Add-one on the Berkeley Restaurant counts moves too much mass: $C(\text{i want})$ falls from 827 to a reconstituted 527 with $|V|=1446$; that is why $\delta \lt 1$ and interpolation are preferred. Notebook practices P02 (Laplace tables) and P03 (held-out interpolation) keep the full worked examples for students who want them. Source: Spring Lecture 02 slides 20–27, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/19.
 
 ---
 
@@ -444,21 +444,23 @@ Expected answer: 10, independent of $t$. Notebook E03 computes it numerically fo
 
 <!-- .slide: id="lower-perplexity" -->
 
-## Lower perplexity – better model
+## Comparing language models
 
-| Data | Unigram | Bigram | Trigram |
+<p><strong>Bits per byte (BPB)</strong> = −log₂ P(test text) ÷ UTF-8 bytes.</p>
+
+| Data and metric | Unigram | Bigram | Trigram |
 | :--- | ---: | ---: | ---: |
-| WSJ, 38M words: word perplexity | 962 | 170 | 109 |
-| TinyStories: bits per byte | 2.07 | 1.30 | 1.12 |
-| OpenWebText: bits per byte | 2.48 | 2.06 | 2.03 |
-| Chinese web: bits per byte | 2.48 | 2.10 | 2.04 |
+| WSJ: word perplexity | 962 | 170 | 109 |
+| TinyStories: BPB | 2.07 | 1.30 | 1.12 |
+| OpenWebText: BPB | 2.48 | 2.06 | 2.03 |
+| Chinese web: BPB | 2.48 | 2.10 | 2.04 |
 
-- Lower perplexity does **not** guarantee better downstream results (speech recognition, MT), but it correlates well enough to serve as the **quick check**.
+Compare columns within each row: lower is better on that test text.
 
-<p class="caption">Course rows: 24 MB of training text each, Qwen3 tokens, tuned interpolation. WSJ rows: Jurafsky and Martin, Ch. 3.</p>
+<p class="caption">Demo: Qwen3, 24 MiB/corpus; separate from A1. WSJ: Jurafsky and Martin, Ch. 3.</p>
 
 Note:
-The WSJ numbers are from Jurafsky and Martin, Chapter 3. Perplexities are only comparable across models that share the same vocabulary and tokenization; that is why the course reports bits per byte on fixed held-out shards. The three course rows were computed with scripts/lecture02_experiments.py (interpolated models tuned on a dev split, Qwen3 tokenizer, 24 MB of training text per source; bytes per token 4.14 / 4.46 / 4.59). The same harness, pipeline/eval.py, scores the 30M–350M proxies in Week 9 and the 1B model in Week 10. GPT-3 also reports perplexity: https://arxiv.org/pdf/2005.14165.pdf; leaderboards: https://nlpprogress.com/english/language_modeling.html. Source: Spring Lecture 02 slide 17, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/16.
+The WSJ numbers are from Jurafsky and Martin, Chapter 3. Perplexities are only comparable across models that share the same vocabulary and tokenization; that is why the course reports bits per byte on fixed held-out shards. The three course rows were computed with scripts/lecture02_experiments.py (interpolated models tuned on a dev split, Qwen3 tokenizer, 24 MiB training cap per source; bytes per content token 4.14 / 4.46 / 4.59). The current pipeline/eval.py scores n-grams; later neural-model adapters should share its text, byte, and EOS conventions. Here EOS contributes to loss and the scored token count, but contributes no text bytes. Lower loss does not guarantee better downstream accuracy. Different corpus rows do not measure the intrinsic difficulty of different languages. GPT-3 also reports perplexity: https://arxiv.org/pdf/2005.14165.pdf; leaderboards: https://nlpprogress.com/english/language_modeling.html. Source: Spring Lecture 02 slide 17, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/16.
 
 ---
 
@@ -511,12 +513,12 @@ Higher order gives locally fluent phrases but still no global coherence. Samples
 
 ## N-grams in a 2026 pipeline: the perplexity filter
 
-<img class="diagram" src="assets/lm-filter.svg" alt="Histogram of bits per byte assigned by a Wikipedia 3-gram model to 1200 OpenWebText documents, with a dashed cut line at 2.63 bits per byte that drops the worst third, and a second histogram of TinyStories documents centred near 2.75.">
+<div class="plot" data-plotly="assets/lm-filter.json" role="img" aria-label="Percentages of web and TinyStories documents in common reference-model BPB bins; a dashed line marks an illustrative cutoff."></div>
 
-<p class="caption">CCNet, RedPajama-V2 (<code>ccnet_perplexity</code>), and Dolma keep web text that a Wikipedia n-gram model finds predictable. Closest to Wikipedia here: a wire-service news paragraph (1.99 bits per byte); farthest: a page of garbled box-drawing characters (6.76).</p>
+<p class="caption"><strong>Predictable under Wikipedia ≠ universally high quality.</strong> CCNet supplies scores and buckets; RedPajama-V2 exposes <code>ccnet_perplexity</code>. This Qwen-tokenized trigram uses BPB and a course-selected cutoff.</p>
 
 Note:
-Period 3 begins here. This is stage 2b of the course data pipeline (docs/pretraining-plan.md, Section 4): a reference n-gram model trained on 15158 Wikipedia articles (25 MB of WikiText-103) scores every web document in bits per byte; CCNet keeps the head and middle thirds. Median web score 2.52, median TinyStories score 2.75: children's stories are far from Wikipedia, which is exactly what a reference model measures, so the threshold is a policy choice, not a quality oracle. Students run this on 100 documents in the Week 2 task and on the full mixture in Week 5 (pipeline/filters/lm_score.py). Figure: scripts/lecture02_experiments.py, Qwen3 tokenizer.
+Period 3 begins here. This is a teaching analogue for stage 2b of docs/pretraining-plan.md. Whole WikiText-103 articles are capped before reserving the last 5% for development; assets/lecture02-results.json records the actual loaded, selected, training, and development counts. Both populations use the same bins and their own percentage denominator. The cutoff discards approximately the highest-scoring third of this web sample; it is not a universal CCNet policy. Children's stories can be useful while receiving a worse score under a Wikipedia reference. CCNet Section 5.2 describes buckets and the value of retaining specialized content: https://arxiv.org/html/1911.00359v1. RedPajama-V2 documents its score as an annotation: https://huggingface.co/datasets/togethercomputer/RedPajama-Data-V2. Dolma explicitly declined CCNet quality scores and used Gopher/C4 heuristics instead: https://arxiv.org/html/2402.00159v1, Section 3.1.2. Figure: scripts/lecture02_experiments.py. The optional future exercise is to inspect documents on both sides before selecting a cutoff.
 
 ---
 
@@ -575,7 +577,7 @@ The figure and text are the Spring slide image, kept unchanged. Source: Spring L
 <p class="caption">Forward inference (decoding): $\mathbf{e}=[\mathbf{E}x_{t-3},\mathbf{E}x_{t-2},\mathbf{E}x_{t-1}]$, $\mathbf{h}=\sigma(\mathbf{W}\mathbf{e}+\mathbf{b})$, $\hat{\mathbf{y}}=\text{softmax}(\mathbf{U}\mathbf{h})$.</p>
 
 Note:
-Diagram from Jurafsky and Martin, Chapter 7. Source: Spring Lecture 02 slide 31, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/30.
+Diagram from an earlier Jurafsky and Martin draft, then Chapter 7; the current feedforward-LM reading is Chapter 6. Source: Spring Lecture 02 slide 31, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/30.
 
 ---
 
@@ -588,7 +590,7 @@ Diagram from Jurafsky and Martin, Chapter 7. Source: Spring Lecture 02 slide 31,
 <p class="caption">Embeddings as model parameters, learned with the loss $L=-\log P(\text{fish}\mid\text{for, all, the})$.</p>
 
 Note:
-Diagram from Jurafsky and Martin, Chapter 7. Source: Spring Lecture 02 slide 32, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/31.
+Diagram from an earlier Jurafsky and Martin draft, then Chapter 7; the current feedforward-LM reading is Chapter 6. Source: Spring Lecture 02 slide 32, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/31.
 
 ---
 
@@ -609,12 +611,12 @@ NPLM already beat the best smoothed $N$-gram models in 2003; the gap widened wit
 
 ## The loop, in miniature
 
-<img class="diagram" src="assets/self-training-loop.svg" alt="Line chart: held-out bits per byte of a bigram model retrained on its own samples for 5 rounds, rising from 1.30 at round 0 to 1.94 at round 5.">
+<div class="plot" data-plotly="assets/self-training-loop.json" role="img" aria-label="Held-out BPB across six rounds of replacing a training corpus with capped model samples; hover for each round's token budget."></div>
 
-<p class="caption">Round 0: bigram on TinyStories. Each round: sample 2,000 stories, retrain on them only. Every self-improving pipeline needs a judge and a filter; Weeks 8 and 11–16 add them. Notebook practice P04.</p>
+<p class="caption">Replace the original corpus with 2,000 samples per round, capped at 128 tokens each. Training drops from 6.08M to at most 0.256M tokens. This toy experiment changes both data size and content; it does not test a filter. Notebook P04.</p>
 
 Note:
-Held-out bits per byte 1.299 → 1.940 over 5 rounds; distinct token types in the corpus 12,211 → 8,205. A round-5 sample: “One to the współpr He ICT_author need nice the,Afterกังวล so little stomach his rabbit was was time it отзывы all, windo”. This is model collapse in its simplest form (Shumailov et al., 2024): the tails of the distribution are lost first. The fix is the previous section's tool, a reference model or judge that filters synthetic data before it is trained on; Cosmopedia (Week 8) and rejection sampling (Week 11) are the same loop with the filter in place. Figure: scripts/lecture02_experiments.py; P04 reproduces the effect on twelve sentences.
+The original TinyStories corpus is itself synthetic, so “original” does not mean human-written. The measured loss changes reflect finite sampling, corpus replacement, a smaller token budget, and truncated sequence endings together. Keep this as an illustrative replacement experiment, not causal evidence that every self-training system needs a judge or that filtering fixes collapse. P04 uses an exact smoothed-mixture sampler and a fixed vocabulary on twelve original sentences; its scale and values differ from this plot. Ask students to propose equal-token-budget controls: resample original text, replace it with model samples, and retain a mixture of original and generated data. A filtered branch would need its own evaluation. For replacement versus accumulation experiments, see Gerstgrasser et al. (2024), https://arxiv.org/html/2404.01413v2. Shumailov et al. (2024) studies recursive replacement: https://www.nature.com/articles/s41586-024-07566-y. Figure: scripts/lecture02_experiments.py; hover shows actual training-token counts.
 
 ---
 
@@ -625,7 +627,7 @@ Held-out bits per byte 1.299 → 1.940 over 5 rounds; distinct token types in th
 - **Reading:** [Jurafsky and Martin, *N-gram Language Models*](https://web.stanford.edu/~jurafsky/slp3/3.pdf)<br>Chain rule, MLE, perplexity, smoothing, Kneser–Ney.
 - **KenLM** (fast $n$-gram LM toolkit): <a href="https://kheafield.com/code/kenlm/" target="_blank" rel="noopener noreferrer">kheafield.com/code/kenlm/</a>
 - **Google N-Gram Release (Aug 2006):** <a href="https://ai.googleblog.com/2006/08/all-our-n-gram-are-belong-to-you.html" target="_blank" rel="noopener noreferrer">ai.googleblog.com/2006/08/all-our-n-gram-are-belong-to-you.html</a><br>Tokens: 1,024,908,267,229 · Sentences: 95,119,665,584 · Unigrams: 13,588,391 · Fivegrams: 1,176,470,663
-- **Bengio et al. (2003), A Neural Probabilistic Language Model:** <a href="https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf" target="_blank" rel="noopener noreferrer">jmlr.org/papers/volume3/bengio03a</a> · <a href="https://web.stanford.edu/~jurafsky/slp3/7.pdf" target="_blank" rel="noopener noreferrer">Jurafsky and Martin, Ch. 7</a> (the NPLM figures)
+- **Bengio et al. (2003), A Neural Probabilistic Language Model:** <a href="https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf" target="_blank" rel="noopener noreferrer">jmlr.org/papers/volume3/bengio03a</a> · <a href="https://web.stanford.edu/~jurafsky/slp3/6.pdf" target="_blank" rel="noopener noreferrer">Jurafsky and Martin, §6.5</a> (feedforward LMs)
 - **CCNet** (Wenzek et al., 2020), the Wikipedia n-gram filter: <a href="https://arxiv.org/abs/1911.00359" target="_blank" rel="noopener noreferrer">arxiv.org/abs/1911.00359</a> · **Brants et al. (2007)**, 2-trillion-token 5-grams for MT: <a href="https://aclanthology.org/D07-1090/" target="_blank" rel="noopener noreferrer">aclanthology.org/D07-1090</a>
 
 Note:

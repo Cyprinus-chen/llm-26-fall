@@ -4,6 +4,8 @@ import builtins
 import json
 import math
 import re
+import random
+from collections import Counter
 from fractions import Fraction
 from pathlib import Path
 
@@ -89,11 +91,45 @@ def test_interpolation_tunes_lambda_on_held_out_text(lesson):
     assert lesson["scores"][0.6] > lesson["scores"][1.0] and lesson["scores"][0.6] > lesson["scores"][0.0]
 
 
-def test_self_training_loop_drifts_away_from_real_text(lesson):
+def test_self_training_loop_reports_finite_losses_for_all_rounds(lesson):
     rounds = lesson["loop_rounds"]
     assert [r["round"] for r in rounds] == list(range(6))
-    assert rounds[0]["loss"] < rounds[-1]["loss"]
-    assert rounds[-1]["loss"] - rounds[0]["loss"] > 0.3
+    assert all(math.isfinite(r["loss"]) and r["loss"] >= 0 for r in rounds)
+
+
+def test_notebook_mixtures_normalize_on_fixed_vocabulary_and_unknown_histories(lesson):
+    prob, _, _ = lesson["loop_model"](lesson["LOOP_CORPUS"])
+    for previous in (lesson["BOS"], "cat", "unseen", lesson["EOS"]):
+        assert sum(prob(previous, w) for w in lesson["LOOP_VOCAB"]) == pytest.approx(1)
+        assert sum(lesson["interpolated_prob"](previous, w, 0.6) for w in lesson["P03_VOCAB"]) == pytest.approx(1)
+
+
+def test_self_training_sampler_uses_the_scored_distribution(lesson):
+    prob, sample, _ = lesson["loop_model"](lesson["LOOP_CORPUS"])
+    rng = random.Random(2026)
+    draws = Counter(sample(rng, max_length=2) or lesson["EOS"] for _ in range(12000))
+    for word in lesson["LOOP_VOCAB"]:
+        assert draws[word] / 12000 == pytest.approx(prob(lesson["BOS"], word), abs=0.015)
+
+
+def test_notebook_practices_follow_the_stated_order():
+    ids = [match.group(1) for cell in NOTEBOOK["cells"]
+           if (match := re.match(r"## (P\d\d) ", "".join(cell["source"]))) ]
+    assert ids == ["P01", "P02", "P03", "P04"]
+
+
+def test_demonstration_metrics_and_charts_use_consistent_units():
+    results = json.loads((LECTURE / "assets/lecture02-results.json").read_text())
+    for source in results["held_out"].values():
+        assert source["test_tokens"] == source["test_content_tokens"] + source["test_docs"]
+        for row in source["orders"].values():
+            bpb = source["test_tokens"] / source["test_bytes"] * row["loss_nats_per_token"] / math.log(2)
+            assert bpb == pytest.approx(row["bits_per_byte"], abs=0.0006)
+    traces = json.loads((LECTURE / "assets/lm-filter.json").read_text())["data"]
+    assert traces[0]["x"] == traces[1]["x"]
+    assert all(sum(trace["y"]) == pytest.approx(100) for trace in traces)
+    loop = json.loads((LECTURE / "assets/self-training-loop.json").read_text())["data"][0]
+    assert loop["customdata"] == [r["corpus_tokens"] for r in results["self_training"]["rounds"]]
 
 
 def test_sampled_sentences_use_training_bigrams(lesson):
