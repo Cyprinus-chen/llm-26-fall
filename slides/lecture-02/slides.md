@@ -170,34 +170,24 @@ Play the clip (about two and a half minutes) or a part of it. The clip was bundl
 
 ## The $N$-gram model
 
-<p><strong>Intuition:</strong> instead of using the entire history $w_{1:t-1}$, we can <span class="text-bad">approximate</span> the probability by using the last few ($N$) words.</p>
-<ul>
-<li><strong>Unigram model</strong> ($N=1$): approximates $P(\cdot)$ without history: $P(w_t \mid w_{1:t-1}) \approx p_\theta(w_t)$</li>
-</ul>
-<p>$$P(\text{skills}\mid \text{I want to improve my cooking}) \approx p_\theta(\text{skills})$$</p>
-<ul>
-<li><strong>Bigram model</strong> ($N=2$): approximates $P(\cdot)$ by only using $w_{t-1}$: $P(w_t \mid w_{1:t-1}) \approx p_\theta(w_t \mid w_{t-1})$</li>
-</ul>
-<p>$$P(\text{skills}\mid \text{I want to improve my cooking}) \approx p_\theta(\text{skills}\mid \text{cooking})$$</p>
+<p>Predict <strong>skills</strong> after “I want to improve my cooking”.</p>
+
+<table>
+<thead><tr><th>Model</th><th>History retained</th><th>Next-token probability</th></tr></thead>
+<tbody>
+<tr><td><strong>Unigram</strong> ($N=1$)</td><td>None</td><td>$p_\theta(\text{skills})$</td></tr>
+<tr class="fragment" data-fragment-index="0"><td><strong>Bigram</strong> ($N=2$)</td><td>cooking</td><td>$p_\theta(\text{skills}\mid\text{cooking})$</td></tr>
+<tr class="fragment" data-fragment-index="1"><td><strong>Trigram</strong> ($N=3$)</td><td>my cooking</td><td>$p_\theta(\text{skills}\mid\text{my cooking})$</td></tr>
+</tbody>
+</table>
+
+<div class="fragment" data-fragment-index="2">
+<p><strong>Markov assumption:</strong> keep only the previous $N-1$ tokens.</p>
+<p>$P(w_t\mid w_{1:t-1})\approx p_\theta(w_t\mid w_{t-N+1:t-1})\qquad(N\ge2)$</p>
+</div>
 
 Note:
-Source: Spring Lecture 02 slide 9, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/8.
-
----
-
-<!-- .slide: id="ngram-model-2" -->
-
-## The $N$-gram model: Markov assumption
-
-<ul>
-<li><strong>Trigram model</strong> ($N=3$): approximates $P(w_t\mid w_{1:t-1})$ by only using $w_{t-2:t-1}$: $P(w_t\mid w_{1:t-1}) \approx p_\theta(w_t \mid w_{t-2:t-1})$</li>
-</ul>
-<p>$$P(\text{skills}\mid \text{I want to improve my cooking}) \approx p_\theta(\text{skills}\mid \text{my cooking})$$</p>
-<p>The above approximations use the <strong>Markov assumption</strong>. In general, for $N$-gram ($N\ge 2$):</p>
-<p>$$\text{(N-1)-order Markov:}\qquad P(w_t \mid w_{1:t-1}) \approx p_\theta(w_t \mid w_{t-N+1:t-1}).$$</p>
-
-Note:
-An $N$-gram model is an $(N-1)$-order Markov model over tokens. Source: Spring Lecture 02 slide 9, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/8.
+Begin with the unigram row, then reveal bigram, trigram, and the general Markov assumption. Ask how much of “I want to improve my cooking” each model retains when predicting “skills”: zero, one, or two tokens. N counts the predicted token together with its context, so an N-gram model retains the previous N-1 tokens. The unigram has no history; bigram conditions on w_{t-1}; trigram conditions on w_{t-2:t-1}. In general, an N-gram model is an (N-1)-order Markov model over tokens; the displayed history range applies for N at least 2, and N=1 uses the unconditional distribution. BOS padding handles short histories at sentence starts, as explained later. This combines the former Fall slides 11 and 12 into one comparison. Source: Spring Lecture 02 slide 9, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/8.
 
 ---
 
