@@ -86,6 +86,10 @@ It runs offline with the standard library only.
   zero, one, and two tokens. Reveal the bigram and trigram rows in order, then
   the general $(N-1)$-order Markov assumption. N counts the predicted token
   together with its context.
+- The extrinsic-evaluation slide links Humanity’s Last Exam, Agents’ Last Exam,
+  Terminal-Bench, and ARC-AGI-3, with one-line descriptions. Notes distinguish
+  task-based model and agent evaluation from next-token scoring and explain
+  why runtime depends on the evaluation scale and setup.
 - The smoothing section (Spring slides 20–27: intuition, additive smoothing
   with the 8×8 tables, interpolation, Katz backoff, Good–Turing, Kneser–Ney)
   is one page, per the instructor's decision on September 11, 2026. The

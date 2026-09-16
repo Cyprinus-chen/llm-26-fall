@@ -349,20 +349,35 @@ Source: Spring Lecture 02 slide 14, https://baojian.github.io/llm-26/slides/lect
 
 ## Building LMs and evaluation
 
-<p>Split your data into:</p>
-
 | Training data | Validation data | Testing data |
 | :--- | :--- | :--- |
 | Estimate parameters | Tune choices | Report once |
 
-<p><strong>Extrinsic evaluation</strong></p>
+<p><strong>Extrinsic evaluation:</strong> compare downstream task performance.</p>
+
+<div class="columns">
+<div>
 <ul>
-<li>Compare models via <strong>downstream tasks</strong>. Examples: spell correction accuracy; machine translation accuracy.</li>
-<li><span class="text-bad"><strong>Time-consuming</strong></span> (can take days or weeks).</li>
+<li><a href="https://agi.safe.ai/">Humanity’s Last Exam</a><br>Expert academic questions</li>
+<li><a href="https://www.tbench.ai/">Terminal-Bench</a><br>Tasks in a terminal</li>
 </ul>
+</div>
+<div>
+<ul>
+<li><a href="https://agents-last-exam.org/">Agents’ Last Exam</a><br>Professional workflows</li>
+<li><a href="https://arcprize.org/arc-agi/3">ARC-AGI-3</a><br>Interactive reasoning</li>
+</ul>
+</div>
+</div>
+
+<p><span class="text-bad"><strong>Time-consuming</strong></span> at scale (can take days or weeks).</p>
 
 Note:
-The Spring slide shows the split as a proportional bar (about 70/15/15). The second table row is an added one-word summary of each part's role. Source: Spring Lecture 02 slide 15, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/14.
+The Spring slide shows the split as a proportional bar (about 70/15/15). The second table row summarizes each part's role. Keep the test split untouched while choosing the model, prompt, or agent setup. Traditional examples are spell-correction accuracy and machine-translation quality. Source: Spring Lecture 02 slide 15, https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html#/14.
+
+The linked benchmarks are current examples of task-based evaluation, rather than a claim that they are equally established or measure the same capability. Humanity’s Last Exam (HLE) tests expert academic questions across subjects, including multimodal questions. Agents’ Last Exam (ALE) evaluates professional computer workflows with verifiable outcomes. Terminal-Bench evaluates agents on tasks in terminal environments. ARC-AGI-3 tests interactive reasoning in unfamiliar game environments; distinguish it from the static puzzles in earlier ARC-AGI versions. These extend the motivation to modern LMs and agents; they are not proposed experiments for our N-gram model. Official sources checked September 16, 2026: https://agi.safe.ai/ and https://arxiv.org/abs/2501.14249; https://agents-last-exam.org/; https://www.tbench.ai/ and https://arxiv.org/abs/2601.11868; https://arcprize.org/arc-agi/3.
+
+Task scores depend on the model and evaluation setup: tools, prompts, action or token budgets, and benchmark version. Compare systems under a stated protocol; task success and held-out next-token likelihood answer different questions. Time depends on task count, agent trajectory length, repeated trials, environment setup, and available parallelism. Large evaluations can take days or weeks; this is not a fixed runtime for every benchmark. This motivates the next slide's cheaper intrinsic probability-based evaluation.
 
 ---
 
