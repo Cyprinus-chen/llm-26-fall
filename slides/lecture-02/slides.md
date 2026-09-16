@@ -301,7 +301,7 @@ An $N$-gram model needs $N-1$ BOS tokens so that the first word has a full histo
 
 ## Practical issues in $N$-gram LMs: unknown words (OOV)
 
-<p>A word like <em>Thisisahardtofindword</em> simply did not occur in our training set but could be in our test set.</p>
+<p>A word like <em class="text-bad">Thisisahardtofindword</em> simply did not occur in our training set but could be in our test set.</p>
 <ul>
 <li><strong>Closed vocabulary:</strong> test words must be in a fixed lexicon.</li>
 <li><strong>Open vocabulary:</strong> map unseen words to a pseudo-token <span class="text-token">&lt;UNK&gt;</span>.</li>
