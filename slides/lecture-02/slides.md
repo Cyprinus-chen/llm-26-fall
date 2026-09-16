@@ -615,6 +615,36 @@ The original TinyStories corpus is itself synthetic, so “original” does not 
 
 ---
 
+<!-- .slide: id="exit-questions" -->
+
+## Before you leave
+
+<div class="columns columns-wide-left">
+<div>
+<h3>Three questions</h3>
+<ol>
+<li>Why can a larger $N$ hurt on unseen text?</li>
+<li>Does lower perplexity guarantee better task performance?</li>
+<li>How do embeddings help with unseen contexts?</li>
+</ol>
+</div>
+<div>
+<h3>Sources and extensions</h3>
+<p><a href="https://baojian.github.io/llm-26/slides/lecture-02-slides/index.html">Fudan Spring Lecture 02</a><br>Original examples and figures.</p>
+<p><a href="https://www.jmlr.org/papers/v3/bengio03a.html">Bengio et al. (2003)</a><br>Learning shared word vectors.</p>
+<p><a href="../shared/notebook.html?lecture=lecture-02" target="_blank" rel="noopener noreferrer">Notebook P01–P04</a><br>Optional sampling, smoothing, self-training.</p>
+</div>
+</div>
+
+**Next:** embeddings and PyTorch — from tokens to trainable vectors and gradients.
+
+Note:
+Use two minutes for these ungraded discussion questions, then one minute for the readings. Expected answers: (1) For a fixed corpus, longer contexts have fewer observations. More possible N-grams mean sparser counts and potentially worse estimates on unseen text; increasing N does not guarantee better generalization. Smoothing or interpolation can help, and the order should be chosen on development data. (2) No. Perplexity measures predictive fit to the evaluated text; task performance also depends on the task distribution, metric, and system setup. Compare perplexities only under the same tokenization and scoring conventions; bits per byte provides a common unit across tokenizers on the same text with matched preprocessing and boundaries. See the companion note, ../../docs/lecture-02-lm-metrics.md. (3) The neural LM shares an embedding matrix and prediction network across contexts. Similar learned vectors let observations from one context inform predictions for related, unseen combinations. This helps generalization without guaranteeing that every unseen context receives a good prediction. Source: Bengio et al. (2003), https://www.jmlr.org/papers/v3/bengio03a.html.
+
+The Spring Fudan lecture supplies the original examples and figures. Bengio et al. connects the N-gram baseline to learned representations. The notebook link uses the shared launcher and opens the existing classroom notebook; its optional P01–P04 cover sampling, additive smoothing, held-out interpolation, and the controlled interpretation of replacing data with model samples. These are ungraded extensions for all students, not extra-credit work. Next lecture follows the published Week 3 plan: embedding lookup, tensor shapes, batching, autograd, and output projections. Students will trace tensors and gradients through a small language model; see ../../index.html#schedule.
+
+---
+
 <!-- .slide: class="references" id="references" -->
 
 ## Language model toolkits and readings

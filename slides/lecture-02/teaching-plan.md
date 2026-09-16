@@ -20,12 +20,12 @@ The deck is a port of the instructor's
 [Spring 2026 Lecture 02](https://baojian.github.io/llm-26/slides/lecture-02-slides/)
 into the shared Reveal.js template. The content is kept; dense Spring slides
 are split so that each slide holds one idea at the template's font sizes.
-The deck has **37 slides** in three sections (N-gram LMs and smoothing;
+The deck has **38 slides** in three sections (N-gram LMs and smoothing;
 evaluation and perplexity; neural probabilistic LMs), with three repeated
 outlines and a final reading page. Smoothing is one page at the end of the
 first section, right after the count table and OOV where the zeros are on
 screen; notebook practices P02 and P03 retain worked examples of additive
-smoothing and held-out interpolation. Two slides are new in the Fall version and tie the
+smoothing and held-out interpolation. Two new content slides tie the
 lecture to the course pipeline: the n-gram perplexity filter (closing the
 evaluation section) and the self-training loop (before the readings). The numbers on the perplexity, filter, and loop slides come from
 `scripts/lecture02_experiments.py` on held-out shards with the Qwen3
@@ -49,7 +49,7 @@ DeepSeek, OLMo 2, DCLM, and Qwen3 report each one; the PDFs are in `papers/`.
 | 3 | 0–10 | 29–30 | The perplexity filter as stage 2b of the pipeline; N-gram summary |
 | 3 | 10–36 | 31–35 | Outline; four NPLM pages: task and embeddings, forward inference, training, improvements over N-grams (with the Week 9 preview) |
 | 3 | 36–42 | 36 | The loop in miniature: a bigram retrained on its own samples; identify changing token budgets and propose an equal-budget control |
-| 3 | 42–45 | 37 | Toolkits and readings; preview of Week 3 (embeddings) |
+| 3 | 42–45 | 37–38 | Two-minute exit discussion, sources and optional extensions; preview of Week 3 (embeddings and PyTorch); one minute for toolkits and readings |
 
 Breaks fall between periods and are outside the 135 teaching minutes. The three
 E exercises total 11 minutes; the notebook's P01–P04 are for after class. These are
@@ -90,6 +90,10 @@ It runs offline with the standard library only.
   Terminal-Bench, and ARC-AGI-3, with one-line descriptions. Notes distinguish
   task-based model and agent evaluation from next-token scoring and explain
   why runtime depends on the evaluation scale and setup.
+- A closing "Before you leave" slide follows Lecture 01's layout: three
+  discussion questions about N-gram order, perplexity versus task performance,
+  and embedding generalization; sources and optional notebook practice; and
+  a preview of embeddings and PyTorch. Expected answers are in the notes.
 - The smoothing section (Spring slides 20–27: intuition, additive smoothing
   with the 8×8 tables, interpolation, Katz backoff, Good–Turing, Kneser–Ney)
   is one page, per the instructor's decision on September 11, 2026. The
